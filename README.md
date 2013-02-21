@@ -1,9 +1,9 @@
 # OpenFlow on the NetFPGA
 
-#### Alan Braithwaite
-#### Senior Project Implementation
-#### CSU Chico
-#### Spring 2013
+Alan Braithwaite
+Senior Project Implementation
+CSU Chico
+Spring 2013
 
 ## About:
 
