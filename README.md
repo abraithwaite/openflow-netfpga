@@ -16,3 +16,5 @@ A little bit about OpenFlow from their site:
 > OpenFlow enables networks to evolve, by giving a remote controller the power to modify the behavior of network devices, through a well-defined "forwarding instruction set". The growing OpenFlow ecosystem now includes routers, switches, virtual switches, and access points from a range of vendors.
 
 I chose this project because I wanted to know more about OpenFlow and because I've developed a vast interest in network technologies since I started at Chico.  I will be designing my project according to the [OpenFlow Switch Specification 1.0.0](http://www.openflow.org/documents/openflow-spec-v1.0.0.pdf) (pdf).  The goal of the project is to design and implement a fully functional OpenFlow enabled switch that can be integrated with a controller. 
+
+Doing something with networking seemed out of the question for me at first, but then I heard about the NetFPGA.  The NetFPGA is a platform that allows for quick development of experimental network processing architecture and provides the means to do it simply.  Additionally, it has some pretty great documentation on their site.
