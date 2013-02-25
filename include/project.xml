@@ -13,7 +13,6 @@
     core/input_arbiter/rr_input_arbiter
     core/nf2/generic_top
     core/nf2/reference_core
-    core/output_port_lookup/learning_cam_switch
     core/output_queues/sram_rr_output_queues
     core/sram_arbiter/sram_weighted_rr
     core/user_data_path/reference_user_data_path
