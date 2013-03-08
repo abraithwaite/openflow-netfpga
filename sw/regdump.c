@@ -21,7 +21,7 @@
 
 #include <time.h>
 
-#include "../lib/C/reg_defines_reference_switch.h"
+#include "../lib/C/reg_defines_openflow.h"
 #include "../../../lib/C/common/nf2util.h"
 
 #define PATHLEN		80

@@ -1,2 +1,8 @@
+*.bit
 *.o
 *.pyc
+synth/*
+!synth/Makefile
+lib/*/reg_defines_*.*
+regdump
+show_stats
