@@ -4,5 +4,6 @@
 synth/*
 !synth/Makefile
 lib/*/reg_defines_*.*
+registers.v
 regdump
 show_stats
