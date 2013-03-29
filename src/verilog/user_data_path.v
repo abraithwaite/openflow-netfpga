@@ -198,10 +198,10 @@ module user_data_path
     )
     input_arbiter
     (
-    .out_data             (op_lut_in_data),
-    .out_ctrl             (op_lut_in_ctrl),
-    .out_wr               (op_lut_in_wr),
-    .out_rdy              (op_lut_in_rdy),
+    .out_data             (oq_in_data),
+    .out_ctrl             (oq_in_ctrl),
+    .out_wr               (oq_in_wr),
+    .out_rdy              (oq_in_rdy),
 
       // --- Interface to the input queues
     .in_data_0            (in_data_0),
@@ -264,16 +264,11 @@ module user_data_path
     .clk                  (clk)
     );
 
-    output_port_lookup
+    passthrough
     #(.DATA_WIDTH(DATA_WIDTH),
-    .CTRL_WIDTH(CTRL_WIDTH),
-    .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
-    .INPUT_ARBITER_STAGE_NUM(IN_ARB_STAGE_NUM),
-    .STAGE_NUM(OP_LUT_STAGE_NUM),
-    .NUM_OUTPUT_QUEUES(NUM_OUTPUT_QUEUES),
-    .NUM_IQ_BITS(NUM_IQ_BITS)
+      .CTRL_WIDTH(CTRL_WIDTH)
     )
-    output_port_lookup
+    passthrough
     (
     .out_data             (oq_in_data),
     .out_ctrl             (oq_in_ctrl),
@@ -286,34 +281,59 @@ module user_data_path
     .in_wr                (op_lut_in_wr),
     .in_rdy               (op_lut_in_rdy),
 
-    // --- Register interface
-    .reg_req_in           (op_lut_in_reg_req),
-    .reg_ack_in           (op_lut_in_reg_ack),
-    .reg_rd_wr_L_in       (op_lut_in_reg_rd_wr_L),
-    .reg_addr_in          (op_lut_in_reg_addr),
-    .reg_data_in          (op_lut_in_reg_data),
-    .reg_src_in           (op_lut_in_reg_src),
-
-    .reg_req_out          (oq_in_reg_req),
-    .reg_ack_out          (oq_in_reg_ack),
-    .reg_rd_wr_L_out      (oq_in_reg_rd_wr_L),
-    .reg_addr_out         (oq_in_reg_addr),
-    .reg_data_out         (oq_in_reg_data),
-    .reg_src_out          (oq_in_reg_src),
-
-    // --- Misc
     .clk                  (clk),
     .reset                (reset)
     );
 
+//    output_port_lookup
+//    #(.DATA_WIDTH(DATA_WIDTH),
+//    .CTRL_WIDTH(CTRL_WIDTH),
+//    .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
+//    .INPUT_ARBITER_STAGE_NUM(IN_ARB_STAGE_NUM),
+//    .STAGE_NUM(OP_LUT_STAGE_NUM),
+//    .NUM_OUTPUT_QUEUES(NUM_OUTPUT_QUEUES),
+//    .NUM_IQ_BITS(NUM_IQ_BITS)
+//    )
+//    output_port_lookup
+//    (
+//    .out_data             (oq_in_data),
+//    .out_ctrl             (oq_in_ctrl),
+//    .out_wr               (oq_in_wr),
+//    .out_rdy              (oq_in_rdy),
+//
+//    // --- Interface to the rx input queues
+//    .in_data              (op_lut_in_data),
+//    .in_ctrl              (op_lut_in_ctrl),
+//    .in_wr                (op_lut_in_wr),
+//    .in_rdy               (op_lut_in_rdy),
+//
+//    // --- Register interface
+//    .reg_req_in           (op_lut_in_reg_req),
+//    .reg_ack_in           (op_lut_in_reg_ack),
+//    .reg_rd_wr_L_in       (op_lut_in_reg_rd_wr_L),
+//    .reg_addr_in          (op_lut_in_reg_addr),
+//    .reg_data_in          (op_lut_in_reg_data),
+//    .reg_src_in           (op_lut_in_reg_src),
+//
+//    .reg_req_out          (oq_in_reg_req),
+//    .reg_ack_out          (oq_in_reg_ack),
+//    .reg_rd_wr_L_out      (oq_in_reg_rd_wr_L),
+//    .reg_addr_out         (oq_in_reg_addr),
+//    .reg_data_out         (oq_in_reg_data),
+//    .reg_src_out          (oq_in_reg_src),
+//
+//    // --- Misc
+//    .clk                  (clk),
+//    .reset                (reset)
+//    );
+//
     output_queues
     #(.DATA_WIDTH(DATA_WIDTH),
     .CTRL_WIDTH(CTRL_WIDTH),
     .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
     .OP_LUT_STAGE_NUM(OP_LUT_STAGE_NUM),
     .NUM_OUTPUT_QUEUES(NUM_OUTPUT_QUEUES),
-    .STAGE_NUM(OQ_STAGE_NUM),
-    .SRAM_ADDR_WIDTH(SRAM_ADDR_WIDTH))
+    .STAGE_NUM(OQ_STAGE_NUM))
     output_queues
     (// --- data path interface
     .out_data_0       (out_data_0),
@@ -376,17 +396,6 @@ module user_data_path
     .reg_addr_out     (udp_reg_addr_in),
     .reg_data_out     (udp_reg_data_in),
     .reg_src_out      (udp_reg_src_in),
-
-    // --- SRAM sm interface
-    .wr_0_addr        (wr_0_addr),
-    .wr_0_req         (wr_0_req),
-    .wr_0_ack         (wr_0_ack),
-    .wr_0_data        (wr_0_data),
-    .rd_0_ack         (rd_0_ack),
-    .rd_0_data        (rd_0_data),
-    .rd_0_vld         (rd_0_vld),
-    .rd_0_addr        (rd_0_addr),
-    .rd_0_req         (rd_0_req),
 
     // --- Misc
     .clk              (clk),
