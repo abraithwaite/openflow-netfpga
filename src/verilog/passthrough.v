@@ -24,7 +24,7 @@ module passthrough
     localparam  PRE_READ_HDR    = 1,
                 PRE_WAIT_EOP    = 2;
 
-    localparam  RX_QUEUE_HDR    = 8'hFF
+    localparam  RX_QUEUE_HDR    = 8'hFF;
 
     localparam  PRO_WAIT        = 1,
                 PRO_MODIFY_HDR  = 2,
@@ -85,10 +85,10 @@ module passthrough
                     end
                 end
 
-                PRE_DELAY: begin
+                PRE_WAIT_EOP: begin
                     if (in_wr && in_ctrl != 0) begin
                         port_vld <= 0;
-                        pre_state <= PRE_WAIT;
+                        pre_state <= PRE_READ_HDR;
                     end
                 end
             endcase
