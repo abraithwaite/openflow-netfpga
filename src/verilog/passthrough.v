@@ -30,10 +30,10 @@ module passthrough
                 PRO_MODIFY_HDR  = 2,
                 PRO_WRITE       = 4;
 
-    localparam  PORT0           = 1,
-                PORT1           = 4,
-                PORT2           = 16,
-                PORT3           = 64;
+    localparam  PORT0           = 0,
+                PORT1           = 2,
+                PORT2           = 4,
+                PORT3           = 6;
 
     wire [DATA_WIDTH-1:0] fifo_data_out;
     wire [CTRL_WIDTH-1:0] fifo_ctrl_out;
@@ -116,16 +116,16 @@ module passthrough
                     out_wr_nxt  = 1;
                     case(src_port)
                         PORT0: begin
-                            out_data_nxt[`IOQ_DST_PORT_POS+15:`IOQ_DST_PORT_POS] = PORT1;
+                            out_data_nxt[`IOQ_DST_PORT_POS+15:`IOQ_DST_PORT_POS] = 1 << PORT1;
                         end
                         PORT1: begin
-                            out_data_nxt[`IOQ_DST_PORT_POS+15:`IOQ_DST_PORT_POS] = PORT0;
+                            out_data_nxt[`IOQ_DST_PORT_POS+15:`IOQ_DST_PORT_POS] = 1 << PORT0;
                         end
                         PORT2: begin
-                            out_data_nxt[`IOQ_DST_PORT_POS+15:`IOQ_DST_PORT_POS] = PORT3;
+                            out_data_nxt[`IOQ_DST_PORT_POS+15:`IOQ_DST_PORT_POS] = 1 << PORT3;
                         end
                         PORT3: begin
-                            out_data_nxt[`IOQ_DST_PORT_POS+15:`IOQ_DST_PORT_POS] = PORT2;
+                            out_data_nxt[`IOQ_DST_PORT_POS+15:`IOQ_DST_PORT_POS] = 1 << PORT2;
                         end
                     endcase
                     pro_state_nxt = PRO_WRITE;
