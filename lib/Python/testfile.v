@@ -11,7 +11,7 @@ module header_parser
       output                                 in_rdy,
 
       // --- Interface to the next stage
-      output reg [`OF_HEADER_REG_WIDTH-1:0]  header_bus,
+      output reg [264-1:0]  header_bus,
       output reg                             headers_valid,
 
       // --- Misc
@@ -42,25 +42,25 @@ module header_parser
          if (in_wr) begin
             case (rd_state)
                RD_INGRESS_PORT: begin
-                  if (in_ctrl == `IO_QUEUE_STAGE_NUM) begin
-                     header_bus[`OF_IN_PORT + `OF_IN_PORT_POS - 1 : `OF_IN_PORT_POS] <= in_data[31:16];
+                  if (in_ctrl == IO_QUEUE_STAGE_NUM) begin
+                     header_bus[16 + 0 - 1 : 0] <= in_data[31:16];
                      rd_state <= RD_DLDST_DLSRCH;
                   end
                end
                RD_DLDST_DLSRCH: begin
                   if (in_ctrl == 0) begin
-                     header_bus[`OF_DL_DST + `OF_DL_DST_POS - 1 : `OF_DL_DST_POS] <= in_data[63:16];
-                     header_bus[`OF_DL_SRC_POS + 15 : `OF_DL_SRC_POS] <= in_data[15:0];
+                     header_bus[48 + 64 - 1 : 64] <= in_data[63:16];
+                     header_bus[16 + 15 : 16] <= in_data[15:0];
                      rd_state <= RD_DLSRCL_DLTYPE_TOS;
                   end
                end
                RD_DLSRCL_DLTYPE_TOS: begin
                   if (in_ctrl == 0) begin
-                     header_bus[`OF_DL_SRC + `OF_DL_SRC_POS - 1 : `OF_DL_SRC_POS + 16 ] <= in_data[63:32];
-                     header_bus[`OF_DL_TYPE + `OF_DL_TYPE_POS - 1 : `OF_DL_TYPE_POS ] <= in_data[31:16];
+                     header_bus[48 + 16 - 1 : 16 + 16 ] <= in_data[63:32];
+                     header_bus[16 + 136 - 1 : 136 ] <= in_data[31:16];
                      // If Ethertype is IP
                      if (in_data[31:16] == 16'h0800) begin
-                        header_bus[`OF_NW_TOS + `OF_NW_TOS_POS - 1 : `OF_NW_TOS_POS ] <= in_data[7:0];
+                        header_bus[8 + 152 - 1 : 152 ] <= in_data[7:0];
                         rd_hdr_len <= in_data[11:8];
                         rd_is_ip <= 1;
                         rd_state <= RD_NWPROTO;
@@ -73,7 +73,7 @@ module header_parser
                end
                RD_NWPROTO: begin
                   if (in_ctrl == 0) begin
-                     header_bus[`OF_NW_PROTO + `OF_NW_PROTO_POS - 1 : `OF_NW_PROTO_POS ] <= in_data[7:0];
+                     header_bus[8 + 160 - 1 : 160 ] <= in_data[7:0];
                      // IP Fragmentation not supported
                      if (in_data[15] != in_data[13] || in_data[12:0] != 13'h0000) begin
                         rd_is_ipfrag <= 1;
@@ -83,8 +83,8 @@ module header_parser
                end
                RD_NWSRC_NWDSTH: begin
                   if (in_ctrl == 0) begin
-                     header_bus[`OF_NW_SRC + `OF_NW_SRC_POS - 1 : `OF_NW_SRC_POS ] <= in_data[47:16];
-                     header_bus[`OF_NW_DST_POS+ 15:`OF_NW_DST_POS ] <= in_data[15:0];
+                     header_bus[32 + 168 - 1 : 168 ] <= in_data[47:16];
+                     header_bus[200+ 15:200 ] <= in_data[15:0];
                      rd_state <= RD_NWDSTL_TX;
                   end
                end
@@ -93,7 +93,7 @@ module header_parser
 
                   if (rd_is_ip) begin
                      // Read only once
-                     header_bus[`OF_NW_DST + `OF_NW_DST_POS - 1 : `OF_NW_DST_POS + 16] <= in_data[63:48];
+                     header_bus[32 + 200 - 1 : 200 + 16] <= in_data[63:48];
                      rd_is_ip <= 0;
                   end
 
@@ -105,7 +105,7 @@ module header_parser
                   else begin
 
                      if (rd_hdr_len < 5) begin // This happens when tcp/udp src/dst get separated
-                        header_bus[`OF_TP_DST + `OF_TP_DST_POS - 1 : `OF_TP_DST_POS] <= in_data[63:48];
+                        header_bus[16 + 248 - 1 : 248] <= in_data[63:48];
                         headers_valid <= 1;
                         if ( in_ctrl != 0 ) begin
                            rd_state <= RD_INGRESS_PORT;
@@ -116,11 +116,11 @@ module header_parser
 
                      else if (rd_hdr_len == 5) begin
                         if (rd_is_icmp) begin
-                           header_bus[`OF_TP_SRC + `OF_TP_SRC_POS - 1 : `OF_TP_SRC_POS] <= in_data[47:40];
-                           header_bus[`OF_TP_DST + `OF_TP_DST_POS - 1 : `OF_TP_DST_POS] <= in_data[39:32];
+                           header_bus[16 + 232 - 1 : 232] <= in_data[47:40];
+                           header_bus[16 + 248 - 1 : 248] <= in_data[39:32];
                         end else if (rd_is_tp) begin
-                           header_bus[`OF_TP_SRC + `OF_TP_SRC_POS - 1 : `OF_TP_SRC_POS] <= in_data[47:32];
-                           header_bus[`OF_TP_DST + `OF_TP_DST_POS - 1 : `OF_TP_DST_POS] <= in_data[31:16];
+                           header_bus[16 + 232 - 1 : 232] <= in_data[47:32];
+                           header_bus[16 + 248 - 1 : 248] <= in_data[31:16];
                         end
                         headers_valid <= 1;
                         if ( in_ctrl != 0 ) begin
@@ -132,12 +132,12 @@ module header_parser
                      
                      else if (rd_hdr_len == 6) begin
                         if (rd_is_icmp) begin
-                           header_bus[`OF_TP_SRC + `OF_TP_SRC_POS - 1 : `OF_TP_SRC_POS] <= in_data[15:8];
-                           header_bus[`OF_TP_DST + `OF_TP_DST_POS - 1 : `OF_TP_DST_POS] <= in_data[7:0];
+                           header_bus[16 + 232 - 1 : 232] <= in_data[15:8];
+                           header_bus[16 + 248 - 1 : 248] <= in_data[7:0];
                            headers_valid <= 1;
                            rd_state <= WAIT_EOP;
                         end else if (rd_is_tp) begin
-                           header_bus[`OF_TP_SRC + `OF_TP_SRC_POS - 1 : `OF_TP_SRC_POS] <= in_data[15:0];
+                           header_bus[16 + 232 - 1 : 232] <= in_data[15:0];
                            rd_hdr_len <= rd_hdr_len - 2;
                            rd_state <= RD_NWDSTL_TX;
                         end
