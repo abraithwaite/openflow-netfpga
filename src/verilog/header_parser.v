@@ -50,13 +50,13 @@ module header_parser
                RD_DLDST_DLSRCH: begin
                   if (in_ctrl == 0) begin
                      header_bus[`OF_DL_DST + `OF_DL_DST_POS - 1 : `OF_DL_DST_POS] <= in_data[63:16];
-                     header_bus[`OF_DL_SRC_POS + 15 : `OF_DL_SRC_POS] <= in_data[15:0];
+                     header_bus[`OF_DL_SRC_POS + `OF_DL_SRC - 1: `OF_DL_SRC_POS + `OF_DL_SRC - 16] <= in_data[15:0];
                      rd_state <= RD_DLSRCL_DLTYPE_TOS;
                   end
                end
                RD_DLSRCL_DLTYPE_TOS: begin
                   if (in_ctrl == 0) begin
-                     header_bus[`OF_DL_SRC + `OF_DL_SRC_POS - 1 : `OF_DL_SRC_POS + 16 ] <= in_data[63:32];
+                     header_bus[`OF_DL_SRC + `OF_DL_SRC_POS - 17 : `OF_DL_SRC_POS] <= in_data[63:32];
                      header_bus[`OF_DL_TYPE + `OF_DL_TYPE_POS - 1 : `OF_DL_TYPE_POS ] <= in_data[31:16];
                      // If Ethertype is IP
                      if (in_data[31:16] == 16'h0800) begin
@@ -84,7 +84,7 @@ module header_parser
                RD_NWSRC_NWDSTH: begin
                   if (in_ctrl == 0) begin
                      header_bus[`OF_NW_SRC + `OF_NW_SRC_POS - 1 : `OF_NW_SRC_POS ] <= in_data[47:16];
-                     header_bus[`OF_NW_DST_POS+ 15:`OF_NW_DST_POS ] <= in_data[15:0];
+                     header_bus[`OF_NW_DST_POS + `OF_NW_DST - 1:`OF_NW_DST_POS + `OF_NW_DST - 16] <= in_data[15:0];
                      rd_state <= RD_NWDSTL_TX;
                   end
                end
@@ -93,7 +93,7 @@ module header_parser
 
                   if (rd_is_ip) begin
                      // Read only once
-                     header_bus[`OF_NW_DST + `OF_NW_DST_POS - 1 : `OF_NW_DST_POS + 16] <= in_data[63:48];
+                     header_bus[`OF_NW_DST + `OF_NW_DST_POS - 17 : `OF_NW_DST_POS] <= in_data[63:48];
                      rd_is_ip <= 0;
                   end
 
