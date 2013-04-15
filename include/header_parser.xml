@@ -16,7 +16,7 @@
         <nf:constant>
             <nf:name>:OF_IN_PORT_POS</nf:name>
             <nf:description>Ingress port for packet register position</nf:description>
-            <nf:value>16</nf:value>
+            <nf:value>0</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_DL_SRC</nf:name>
@@ -26,7 +26,7 @@
         <nf:constant>
             <nf:name>:OF_DL_SRC_POS</nf:name>
             <nf:description>Ethernet MAC Address Source register position</nf:description>
-            <nf:value>48</nf:value>
+            <nf:value>:OF_IN_PORT_POS + :OF_IN_PORT</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_DL_DST</nf:name>
@@ -36,7 +36,7 @@
         <nf:constant>
             <nf:name>:OF_DL_DST_POS</nf:name>
             <nf:description>Ethernet MAC Address Destination register position</nf:description>
-            <nf:value>48</nf:value>
+            <nf:value>:OF_DL_SRC_POS + :OF_DL_SRC</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_VLAN_ID</nf:name>
@@ -46,7 +46,7 @@
         <nf:constant>
             <nf:name>:OF_VLAN_ID_POS</nf:name>
             <nf:description>Vlan ID register position</nf:description>
-            <nf:value>16</nf:value>
+            <nf:value>:OF_DL_DST_POS + :OF_DL_DST</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_VLAN_PCP</nf:name>
@@ -56,7 +56,7 @@
         <nf:constant>
             <nf:name>:OF_VLAN_PCP_POS</nf:name>
             <nf:description>Vlan QoS register position</nf:description>
-            <nf:value>8</nf:value>
+            <nf:value>:OF_VLAN_ID_POS + :OF_VLAN_ID</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_DL_TYPE</nf:name>
@@ -66,7 +66,7 @@
         <nf:constant>
             <nf:name>:OF_DL_TYPE_POS</nf:name>
             <nf:description>Ethertype register position</nf:description>
-            <nf:value>16</nf:value>
+            <nf:value>:OF_VLAN_PCP_POS + :OF_VLAN_PCP</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_NW_TOS</nf:name>
@@ -76,7 +76,7 @@
         <nf:constant>
             <nf:name>:OF_NW_TOS_POS</nf:name>
             <nf:description>IPv4 Type of Service Field register positon</nf:description>
-            <nf:value>8</nf:value>
+            <nf:value>:OF_DL_TYPE_POS + :OF_DL_TYPE</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_NW_PROTO</nf:name>
@@ -86,7 +86,7 @@
         <nf:constant>
             <nf:name>:OF_NW_PROTO_POS</nf:name>
             <nf:description>IPv4 Protocol Field register position</nf:description>
-            <nf:value>8</nf:value>
+            <nf:value>:OF_NW_TOS_POS + :OF_NW_TOS</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_NW_SRC</nf:name>
@@ -96,7 +96,7 @@
         <nf:constant>
             <nf:name>:OF_NW_SRC_POS</nf:name>
             <nf:description>IPv4 Source Address register position</nf:description>
-            <nf:value>32</nf:value>
+            <nf:value>:OF_NW_PROTO_POS + :OF_NW_PROTO</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_NW_DST</nf:name>
@@ -106,7 +106,7 @@
         <nf:constant>
             <nf:name>:OF_NW_DST_POS</nf:name>
             <nf:description>IPv4 Destination Address register position</nf:description>
-            <nf:value>32</nf:value>
+            <nf:value>:OF_NW_SRC_POS + :OF_NW_SRC</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_TP_SRC</nf:name>
@@ -116,7 +116,7 @@
         <nf:constant>
             <nf:name>:OF_TP_SRC_POS</nf:name>
             <nf:description>Transport Source Port register position</nf:description>
-            <nf:value>16</nf:value>
+            <nf:value>:OF_NW_DST_POS + :OF_NW_DST</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_TP_DST</nf:name>
@@ -126,7 +126,12 @@
         <nf:constant>
             <nf:name>:OF_TP_DST_POS</nf:name>
             <nf:description>Transport Destination Port register position</nf:description>
-            <nf:value>16</nf:value>
+            <nf:value>:OF_TP_SRC_POS + :OF_TP_SRC</nf:value>
+        </nf:constant>
+        <nf:constant>
+            <nf:name>:OF_HEADER_REG_WIDTH</nf:name>
+            <nf:description>Transport Destination Port</nf:description>
+            <nf:value>:OF_TP_DST_POS + :OF_TP_DST</nf:value>
         </nf:constant>
     </nf:constants>
 </nf:module>
