@@ -10,9 +10,7 @@ I will be using the reference router as a barebones framework from which to work
     |
     +---flow_lookup
     |   |
-    |   +---exact_matcher
-    |   |
-    |   +---wildcard_matcher
+    |   +---cam_table
     |
     +---action_modifier
     |

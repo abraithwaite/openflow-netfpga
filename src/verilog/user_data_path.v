@@ -264,44 +264,44 @@ module user_data_path
     .clk                  (clk)
     );
 
-    //passthrough
-    //#(.DATA_WIDTH(DATA_WIDTH),
-    //  .CTRL_WIDTH(CTRL_WIDTH)
-    //)
-    //passthrough
-    //(
-    //.out_data             (oq_in_data),
-    //.out_ctrl             (oq_in_ctrl),
-    //.out_wr               (oq_in_wr),
-    //.out_rdy              (oq_in_rdy),
-
-    //// --- Interface to the rx input queues
-    //.in_data              (op_lut_in_data),
-    //.in_ctrl              (op_lut_in_ctrl),
-    //.in_wr                (op_lut_in_wr),
-    //.in_rdy               (op_lut_in_rdy),
-
-    //.clk                  (clk),
-    //.reset                (reset)
-    //);
-
-    header_parser
+    hub
     #(.DATA_WIDTH(DATA_WIDTH),
       .CTRL_WIDTH(CTRL_WIDTH)
     )
-    header_parser
+    hub
     (
+    .out_data             (oq_in_data),
+    .out_ctrl             (oq_in_ctrl),
+    .out_wr               (oq_in_wr),
+    .out_rdy              (oq_in_rdy),
+
+    // --- Interface to the rx input queues
     .in_data              (op_lut_in_data),
     .in_ctrl              (op_lut_in_ctrl),
     .in_wr                (op_lut_in_wr),
     .in_rdy               (op_lut_in_rdy),
-    
-    .header_bus           (),
-    .headers_valid        (),
 
     .clk                  (clk),
     .reset                (reset)
     );
+
+    //header_parser
+    //#(.DATA_WIDTH(DATA_WIDTH),
+    //  .CTRL_WIDTH(CTRL_WIDTH)
+    //)
+    //header_parser
+    //(
+    //.in_data              (op_lut_in_data),
+    //.in_ctrl              (op_lut_in_ctrl),
+    //.in_wr                (op_lut_in_wr),
+    //.in_rdy               (op_lut_in_rdy),
+    //
+    //.header_bus           (),
+    //.headers_valid        (),
+
+    //.clk                  (clk),
+    //.reset                (reset)
+    //);
 
     output_queues
     #(.DATA_WIDTH(DATA_WIDTH),
