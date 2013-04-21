@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// vim:set shiftwidth=4 softtabstop=4 expandtab:
+// vim:set shiftwidth=3 softtabstop=3 expandtab:
 // $Id: user_data_path.v 1973 2007-07-20 00:57:30Z grg $
 //
 // Module: user_data_path.v
