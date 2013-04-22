@@ -134,4 +134,17 @@
             <nf:value>:OF_TP_DST_POS + :OF_TP_DST</nf:value>
         </nf:constant>
     </nf:constants>
+    <nf:registers>
+        <nf:register>
+            <nf:name>num_pkts_seen</nf:name>
+            <nf:description>Number of packets sent</nf:description>
+            <nf:type>of_header_register</nf:type>
+        </nf:register>
+    </nf:registers>
+    <nf:types>
+        <nf:type xsi:type="nf:SimpleType">
+            <nf:name>of_header_register</nf:name>
+            <nf:width>:OF_HEADER_REG_WIDTH</nf:width>
+        </nf:type>
+    </nf:types>
 </nf:module>
