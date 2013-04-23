@@ -11,7 +11,9 @@
 module header_parser
    #(
       parameter DATA_WIDTH = 64,
-      parameter CTRL_WIDTH = DATA_WIDTH/8
+      parameter CTRL_WIDTH = DATA_WIDTH/8,
+      parameter UDP_REG_ADDR_WIDTH = `UDP_REG_ADDR_WIDTH,
+      parameter UDP_REG_SRC_WIDTH = 2
    )
    (
       // --- Interface to the previous stage
@@ -79,7 +81,7 @@ module header_parser
                WAIT_EOP             = 0;
 
    // Register parameters for register requests
-   localparam NUM_WORDS_USED = ceildiv(`OF_HEADER_REG_WIDTH, `CPCI_NF2_DATA_WIDTH)
+   localparam NUM_WORDS_USED = ceildiv(`OF_HEADER_REG_WIDTH, `CPCI_NF2_DATA_WIDTH);
    localparam NUM_REGS_USED = NUM_WORDS_USED;
    localparam ADDR_WIDTH = log2(NUM_REGS_USED);
 
@@ -99,7 +101,7 @@ module header_parser
    wire                                               tag_hit;
 
    reg [`CPCI_NF2_DATA_WIDTH-1:0]                     reg_data;
-   reg [`CPCI_NF2_DATA_WIDTH-1:0]                     last_header[0:NUM_REGS_USED]
+   reg [`OF_HEADER_REG_WIDTH-1:0]                     last_header;
 
 
    // -------------------------Module Logic---------------------------------//
@@ -121,7 +123,13 @@ module header_parser
          reg_data = 'h0;
       end
       else begin
-         reg_data = header_bus[addr*`CPCI_NF2_DATA_WIDTH +: `CPCI_NF2_DATA_WIDTH];
+         if (addr == NUM_WORDS_USED - 1) begin
+            reg_data = {{24{1'b0}}, {last_header[addr * `CPCI_NF2_DATA_WIDTH
+               +: `OF_HEADER_REG_WIDTH % `CPCI_NF2_DATA_WIDTH]}};
+         end
+         else begin
+            reg_data = last_header[ addr * `CPCI_NF2_DATA_WIDTH +: `CPCI_NF2_DATA_WIDTH];
+         end
       end
    end
    // end Register I/O Async block
@@ -170,6 +178,10 @@ module header_parser
          rd_state <= RD_INGRESS_PORT;
          headers_valid <= 0;
          header_bus <= 0;
+         rd_is_tp <= 0;
+         rd_is_icmp <= 0;
+         rd_is_ipfrag <= 0;
+         rd_is_ip <= 0;
       end
       else begin
          if (in_wr) begin
@@ -208,8 +220,14 @@ module header_parser
                   if (in_ctrl == 0) begin
                      header_bus[`OF_NW_PROTO + `OF_NW_PROTO_POS - 1 : `OF_NW_PROTO_POS ] <= in_data[7:0];
                      // IP Fragmentation not supported
-                     if (in_data[15] != in_data[13] || in_data[12:0] != 13'h0000) begin
+                     if (in_data[29] != 0 || in_data[28:16] != 13'h0000) begin
                         rd_is_ipfrag <= 1;
+                     end
+                     if (in_data[7:0] == 8'h06 || in_data[7:0] == 8'h11) begin
+                        rd_is_tp <= 1;
+                     end
+                     else if (in_data[7:0] == 8'h01) begin
+                        rd_is_icmp <= 1;
                      end
                      rd_state <= RD_NWSRC_NWDSTH;
                   end
@@ -293,7 +311,12 @@ module header_parser
                   // End of packet reached, reset headers
                   if (in_ctrl != 0) begin
                      headers_valid <= 0;
+                     last_header <= header_bus;
                      header_bus <= 0;
+                     rd_is_tp <= 0;
+                     rd_is_icmp <= 0;
+                     rd_is_ipfrag <= 0;
+                     rd_is_ip <= 0;
                      rd_state <= RD_INGRESS_PORT;
                   end
                end
