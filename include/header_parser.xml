@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <nf:module xmlns:nf="http://github.com/NetFPGA/netfpga/wiki/RegisterSystem" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://github.com/NetFPGA/netfpga/wiki/RegisterSystem">
     <nf:name>header_parser</nf:name>
-    <nf:prefix>header_parser</nf:prefix>
+    <nf:prefix>hdr</nf:prefix>
     <nf:location>udp</nf:location>
     <nf:description></nf:description>
-    <nf:blocksize>64</nf:blocksize>
-    <nf:registers>
-    </nf:registers>
+    <nf:blocksize>512</nf:blocksize>
     <nf:constants>
         <nf:constant>
             <nf:name>:OF_IN_PORT</nf:name>

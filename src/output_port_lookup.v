@@ -49,6 +49,26 @@ module output_port_lookup
    // Define the log2 function
    `LOG2_FUNC
 
+   //------------------------- Signals-------------------------------
+   wire [CTRL_WIDTH-1:0]            ap_in_ctrl;
+   wire [DATA_WIDTH-1:0]            ap_in_data;
+   wire                             ap_in_wr;
+   wire                             ap_in_rdy;
+   wire [`OF_ACTION_DATA_WIDTH-1:0]    ap_in_act_data;
+   wire [`OF_ACTION_CTRL_WIDTH-1:0]    ap_in_act_ctrl;
+   wire                                ap_in_act_valid;
+
+   wire [`OF_HEADER_REG_WIDTH-1:0]  mtch_in_header;
+   wire                             mtch_in_header_valid;
+
+   wire                             mtch_in_reg_req;
+   wire                             mtch_in_reg_ack;
+   wire                             mtch_in_reg_rd_wr_L;
+   wire [`UDP_REG_ADDR_WIDTH-1:0]   mtch_in_reg_addr;
+   wire [`CPCI_NF2_DATA_WIDTH-1:0]  mtch_in_reg_data;
+   wire [UDP_REG_SRC_WIDTH-1:0]     mtch_in_reg_src;
+
+
    header_parser #(
       .DATA_WIDTH(DATA_WIDTH),
       .CTRL_WIDTH(CTRL_WIDTH)
@@ -59,8 +79,57 @@ module output_port_lookup
       .in_wr                (in_wr),
       .in_rdy               (in_rdy),
 
-      .header_bus           (),
-      .headers_valid        (),
+      .header_bus           (mtch_in_header),
+      .headers_valid        (mtch_in_header_valid),
+
+      // --- Register interface
+      .reg_req_in           (reg_req_in),
+      .reg_ack_in           (reg_ack_in),
+      .reg_rd_wr_L_in       (reg_rd_wr_L_in),
+      .reg_addr_in          (reg_addr_in),
+      .reg_data_in          (reg_data_in),
+      .reg_src_in           (reg_src_in),
+
+      .reg_req_out          (mtch_in_reg_req),
+      .reg_ack_out          (mtch_in_reg_ack),
+      .reg_rd_wr_L_out      (mtch_in_reg_rd_wr_L),
+      .reg_addr_out         (mtch_in_reg_addr),
+      .reg_data_out         (mtch_in_reg_data),
+      .reg_src_out          (mtch_in_reg_src),
+
+      .clk                  (clk),
+      .reset                (reset)
+   );
+
+   matcher #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .CTRL_WIDTH(CTRL_WIDTH)
+      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
+   ) matcher (
+
+      // Input from header parser
+      .header_bus           (mtch_in_header),
+      .headers_valid        (mtch_in_header_valid),
+
+      // Output to action processor
+      .action_data_bus      (ap_in_act_data),
+      .action_ctrl_bus      (ap_in_act_ctrl),
+      .action_valid         (ap_in_act_valid),
+
+      // --- Register interface
+      .reg_req_in           (mtch_in_reg_req),
+      .reg_ack_in           (mtch_in_reg_ack),
+      .reg_rd_wr_L_in       (mtch_in_reg_rd_wr_L),
+      .reg_addr_in          (mtch_in_reg_addr),
+      .reg_data_in          (mtch_in_reg_data),
+      .reg_src_in           (mtch_in_reg_src),
+
+      .reg_req_out          (reg_req_out),
+      .reg_ack_out          (reg_ack_out),
+      .reg_rd_wr_L_out      (reg_rd_wr_L_out),
+      .reg_addr_out         (reg_addr_out),
+      .reg_data_out         (reg_data_out),
+      .reg_src_out          (reg_src_out),
 
       .clk                  (clk),
       .reset                (reset)
@@ -81,9 +150,6 @@ module output_port_lookup
       .out_wr               (ap_in_wr),
       .out_rdy              (ap_in_rdy),
 
-      .header_bus           (),
-      .headers_valid        (),
-
       .clk                  (clk),
       .reset                (reset)
    );
@@ -93,18 +159,22 @@ module output_port_lookup
       .CTRL_WIDTH(CTRL_WIDTH)
       .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
    ) action_processor (
+      // Input from matcher
+      .action_data_bus      (ap_in_act_data),
+      .action_ctrl_bus      (ap_in_act_ctrl),
+      .action_valid         (ap_in_act_valid),
+
+      // Input from holding FIFO
       .in_data              (ap_in_data),
       .in_ctrl              (ap_in_ctrl),
       .in_wr                (ap_in_wr),
       .in_rdy               (ap_in_rdy),
 
+      // Output to output queues
       .out_data             (out_data),
       .out_ctrl             (out_ctrl),
       .out_wr               (out_wr),
       .out_rdy              (out_rdy),
-
-      .header_bus           (),
-      .headers_valid        (),
 
       .clk                  (clk),
       .reset                (reset)
