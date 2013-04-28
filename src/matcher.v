@@ -11,8 +11,8 @@
 
 module matcher
    #(
-      parameter DATA_WIDTH = 64,
-      parameter CTRL_WIDTH = DATA_WIDTH/8,
+      parameter DATA_WIDTH = `OF_ACTION_DATA_WIDTH,
+      parameter CTRL_WIDTH = `OF_ACTION_CTRL_WIDTH,
       parameter UDP_REG_SRC_WIDTH = 2
    )
    (
