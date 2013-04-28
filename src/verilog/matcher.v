@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // vim:set shiftwidth=3 softtabstop=3 expandtab:
-// $Id: module_template 2008-03-13 gac1 $
+// $Id: matcher 2008-03-13 gac1 $
 //
-// Module: module_template.v
+// Module: matcher.v
 // Project: NF2.1
 // Description: defines a module for the user data path
 //
@@ -16,15 +16,14 @@ module matcher
       parameter UDP_REG_SRC_WIDTH = 2
    )
    (
-      input  [DATA_WIDTH-1:0]             in_data,
-      input  [CTRL_WIDTH-1:0]             in_ctrl,
-      input                               in_wr,
-      output                              in_rdy,
+      // --- Interface to the header parser
+      input [`OF_HEADER_REG_WIDTH-1:0]       header_bus,
+      input                                  headers_valid,
 
-      output [DATA_WIDTH-1:0]             out_data,
-      output [CTRL_WIDTH-1:0]             out_ctrl,
-      output                              out_wr,
-      input                               out_rdy,
+      // --- Interface to the action processor
+      output reg [`OF_ACTION_DATA_WIDTH-1:0] action_data_bus,
+      output reg [`OF_ACTION_CTRL_WIDTH-1:0] action_ctrl_bus,
+      output reg                             action_valid,
 
       // --- Register interface
       input                               reg_req_in,
@@ -48,93 +47,131 @@ module matcher
 
    // Define the log2 function
    `LOG2_FUNC
-
-   //------------------------- Signals-------------------------------
-
-   wire [DATA_WIDTH-1:0]         in_fifo_data;
-   wire [CTRL_WIDTH-1:0]         in_fifo_ctrl;
-
-   wire                          in_fifo_nearly_full;
-   wire                          in_fifo_empty;
-
-   reg                           in_fifo_rd_en;
-   reg                           out_wr_int;
-
+   `CEILDIV_FUNC
 
    //------------------------- Local assignments -------------------------------
 
-   assign in_rdy     = !in_fifo_nearly_full;
-   assign out_wr     = out_wr_int;
-   assign out_data   = in_fifo_data;
-   assign out_ctrl   = in_fifo_ctrl;
+   localparam MATCHER_ADDR_BITS = log2(`OF_NUM_ENTRIES);
+   localparam MATCHER_NUM_WORDS = ceildiv(`OF_HEADER_REG_WIDTH, `CPCI_NF2_DATA_WIDTH);
 
+   //------------------------- Signals-------------------------------
+
+   
+   // --- LUT <-> CAM interface
+
+   wire                             cam_busy;
+   wire                             cam_match;
+
+   wire [`OF_NUM_ENTRIES-1:0]       cam_match_addr;
+   wire [`OF_HEADER_REG_WIDTH-1:0]  cam_din, cam_data_mask;
+   wire [`OF_HEADER_REG_WIDTH-1:0]  cam_cmp_din, cam_cmp_data_mask;
+   wire                             cam_we;
+   wire [MATCHER_ADDR_BITS-1:0]     cam_wr_addr;
+   
+   // --- Breaking up the address
+
+   wire [MATCHER_NUM_WORDS-1:0]     cam_busy_itr;
+   wire [MATCHER_NUM_WORDS-1:0]     cam_match_itr;
+
+   //wire [`OF_NUM_ENTRIES-1:0]       cam_match_addr_itr[MATCHER_NUM_WORDS-1:0];
+   wire [MATCHER_NUM_WORDS-1:0]     cam_match_addr_bus_itr[`OF_NUM_ENTRIES-1:0];
+   wire [`OF_NUM_ENTRIES-1:0]       cam_din_itr[MATCHER_NUM_WORDS-1:0];
+   wire [`OF_NUM_ENTRIES-1:0]       cam_data_mask_itr[MATCHER_NUM_WORDS-1:0];
+   wire [`OF_NUM_ENTRIES-1:0]       cam_cmp_din_itr[MATCHER_NUM_WORDS-1:0];
+   wire [`OF_NUM_ENTRIES-1:0]       cam_cmp_data_mask_itr[MATCHER_NUM_WORDS-1:0];
 
    //------------------------- Modules-------------------------------
 
-   fallthrough_small_fifo #(
-      .WIDTH(CTRL_WIDTH+DATA_WIDTH),
-      .MAX_DEPTH_BITS(2)
-   ) input_fifo (
-      .din           ({in_ctrl, in_data}),   // Data in
-      .wr_en         (in_wr),                // Write enable
-      .rd_en         (in_fifo_rd_en),        // Read the next word
-      .dout          ({in_fifo_ctrl, in_fifo_data}),
-      .full          (),
-      .nearly_full   (in_fifo_nearly_full),
-      .prog_full     (),
-      .empty         (in_fifo_empty),
-      .reset         (reset),
-      .clk           (clk)
+   unencoded_cam_lut_sm
+   #(
+      .CMP_WIDTH(`OF_HEADER_REG_WIDTH),
+      .DATA_WIDTH(`OF_ACTION_DATA_WIDTH + `OF_ACTION_CTRL_WIDTH),
+      .TAG(`MATCHER_BLOCK_ADDR),
+      .LUT_DEPTH(`OF_NUM_ENTRIES),
+      .REG_ADDR_WIDTH(`MATCHER_REG_ADDR_WIDTH)
+   )
+   unencoded_cam_lut_sm
+   (
+      .lookup_req(headers_valid),
+      .lookup_cmp_data(header_bus),
+      .lookup_cmp_dmask({`OF_HEADER_REG_WIDTH{1'b0}}),
+
+      .reg_req_in          (reg_req_in),
+      .reg_ack_in          (reg_ack_in),
+      .reg_rd_wr_L_in      (reg_rd_wr_L_in),
+      .reg_addr_in         (reg_addr_in),
+      .reg_data_in         (reg_data_in),
+      .reg_src_in          (reg_src_in),
+
+      .reg_req_out         (reg_req_out), 
+      .reg_ack_out         (reg_ack_out), 
+      .reg_rd_wr_L_out     (reg_rd_wr_L_out),
+      .reg_addr_out        (reg_addr_out),
+      .reg_data_out        (reg_data_out),
+      .reg_src_out         (reg_src_out), 
+
+      .cam_busy            (cam_busy),
+      .cam_match           (cam_match),
+      .cam_match_addr      (cam_match_addr),
+
+      .cam_din              (cam_din),
+      .cam_data_mask        (cam_data_mask),
+      .cam_cmp_din          (cam_cmp_din),
+      .cam_cmp_data_mask    (cam_cmp_data_mask),
+      .cam_we               (cam_we),
+      .cam_wr_addr          (cam_wr_addr),
+
+      .clk                 (clk),
+      .reset               (reset)
    );
 
-   generic_regs
-   #(
-      .UDP_REG_SRC_WIDTH   (UDP_REG_SRC_WIDTH),
-      .TAG                 (0),                 // Tag -- eg. MODULE_TAG
-      .REG_ADDR_WIDTH      (1),                 // Width of block addresses -- eg. MODULE_REG_ADDR_WIDTH
-      .NUM_COUNTERS        (0),                 // Number of counters
-      .NUM_SOFTWARE_REGS   (0),                 // Number of sw regs
-      .NUM_HARDWARE_REGS   (0)                  // Number of hw regs
-   ) module_regs (
-      .reg_req_in       (reg_req_in),
-      .reg_ack_in       (reg_ack_in),
-      .reg_rd_wr_L_in   (reg_rd_wr_L_in),
-      .reg_addr_in      (reg_addr_in),
-      .reg_data_in      (reg_data_in),
-      .reg_src_in       (reg_src_in),
+   generate
+      genvar i, j;
+      for ( i = 0; i < MATCHER_NUM_WORDS; i = i + 1 ) begin:cam_gen
 
-      .reg_req_out      (reg_req_out),
-      .reg_ack_out      (reg_ack_out),
-      .reg_rd_wr_L_out  (reg_rd_wr_L_out),
-      .reg_addr_out     (reg_addr_out),
-      .reg_data_out     (reg_data_out),
-      .reg_src_out      (reg_src_out),
+         wire [`OF_NUM_ENTRIES -1 : 0] cam_match_addr_tmp;
+         for ( j = 0; j < `OF_NUM_ENTRIES; j = j + 1 ) begin:cam_match_bit_gen
+            assign cam_match_addr_bus_itr[j][i] = cam_match_addr_tmp[j];
+         end
+         srl_cam_unencoded_32x32 srl_cam_unencoded
+         (
+            // --- Inputs
+            .din              (cam_din_itr[i]),
+            .data_mask        (cam_data_mask_itr[i]),
+            .cmp_din          (cam_cmp_din_itr[i]),
+            .cmp_data_mask    (cam_cmp_data_mask_itr[i]),
 
-      // --- counters interface
-      .counter_updates  (),
-      .counter_decrement(),
+            .we               (cam_we),
+            .wr_addr          (cam_wr_addr),
 
-      // --- SW regs interface
-      .software_regs    (),
+            // --- Outputs
+            .busy             (cam_busy_itr[i]),
+            .match            (cam_match_itr[i]),
+            .match_addr       (cam_match_addr_tmp),
 
-      // --- HW regs interface
-      .hardware_regs    (),
+            .clk              (clk)
+         );
 
-      .clk              (clk),
-      .reset            (reset)
-    );
+         // 32 from CAM size
+         if (i == MATCHER_NUM_WORDS - 1) begin
+            assign cam_din_itr[i] = cam_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
+            assign cam_data_mask_itr[i] = cam_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
+            assign cam_cmp_din_itr[i] = cam_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
+            assign cam_cmp_data_mask_itr[i] = cam_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
+         end
+         else begin
+            assign cam_din_itr[i] = cam_din[32*i + 31 : 32*i];
+            assign cam_data_mask_itr[i] = cam_din[32*i + 31 : 32*i];
+            assign cam_cmp_din_itr[i] = cam_din[32*i + 31 : 32*i];
+            assign cam_cmp_data_mask_itr[i] = cam_din[32*i + 31 : 32*i];
+         end
+      end
+
+      for ( j = 0; j < MATCHER_NUM_WORDS; j = j + 1 ) begin:cam_match_addr_gen
+         assign cam_match_addr[j] = &cam_match_addr_bus_itr[j];
+      end
+   endgenerate
 
    //------------------------- Logic-------------------------------
-
-   always @(*) begin
-      // Default values
-      out_wr_int = 0;
-      in_fifo_rd_en = 0;
-
-      if (!in_fifo_empty && out_rdy) begin
-         out_wr_int = 1;
-         in_fifo_rd_en = 1;
-      end
-   end
 
 endmodule
