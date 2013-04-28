@@ -13,7 +13,7 @@ module action_processor
    #(
       parameter DATA_WIDTH = 64,
       parameter CTRL_WIDTH = DATA_WIDTH/8,
-      parameter OF_ACTION_WIDTH = `OF_ACTION_DATA_WIDTH,
+      parameter OF_ACTION_DATA_WIDTH = `OF_ACTION_DATA_WIDTH,
       parameter OF_ACTION_CTRL_WIDTH = `OF_ACTION_CTRL_WIDTH,
       parameter UDP_REG_SRC_WIDTH = 2
    )
@@ -63,7 +63,7 @@ module action_processor
    reg                           out_wr_int;
 
    wire [OF_ACTION_DATA_WIDTH-1:0]    in_action_data;
-   wire [OF_ACTION_CTRL_WIDTH-1:0]    in_action_data;
+   wire [OF_ACTION_CTRL_WIDTH-1:0]    in_action_ctrl;
 
    //------------------------- Local assignments -------------------------------
 

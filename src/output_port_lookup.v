@@ -71,13 +71,12 @@ module output_port_lookup
 
    header_parser #(
       .DATA_WIDTH(DATA_WIDTH),
-      .CTRL_WIDTH(CTRL_WIDTH)
-      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
+      .CTRL_WIDTH(CTRL_WIDTH),
+      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH)
    ) header_parser (
       .in_data              (in_data),
       .in_ctrl              (in_ctrl),
       .in_wr                (in_wr),
-      .in_rdy               (in_rdy),
 
       .header_bus           (mtch_in_header),
       .headers_valid        (mtch_in_header_valid),
@@ -103,8 +102,8 @@ module output_port_lookup
 
    matcher #(
       .DATA_WIDTH(DATA_WIDTH),
-      .CTRL_WIDTH(CTRL_WIDTH)
-      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
+      .CTRL_WIDTH(CTRL_WIDTH),
+      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH)
    ) matcher (
 
       // Input from header parser
@@ -137,8 +136,8 @@ module output_port_lookup
 
    holding_fifo #(
       .DATA_WIDTH(DATA_WIDTH),
-      .CTRL_WIDTH(CTRL_WIDTH)
-      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
+      .CTRL_WIDTH(CTRL_WIDTH),
+      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH)
    ) holding_fifo (
       .in_data              (in_data),
       .in_ctrl              (in_ctrl),
@@ -156,8 +155,8 @@ module output_port_lookup
 
    action_processor #(
       .DATA_WIDTH(DATA_WIDTH),
-      .CTRL_WIDTH(CTRL_WIDTH)
-      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
+      .CTRL_WIDTH(CTRL_WIDTH),
+      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH)
    ) action_processor (
       // Input from matcher
       .action_data_bus      (ap_in_act_data),

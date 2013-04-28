@@ -265,8 +265,8 @@ module user_data_path
 
    output_port_lookup #(
       .DATA_WIDTH(DATA_WIDTH),
-      .CTRL_WIDTH(CTRL_WIDTH)
-      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
+      .CTRL_WIDTH(CTRL_WIDTH),
+      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH)
    ) output_port_lookup (
       .in_data              (opl_in_data),
       .in_ctrl              (opl_in_ctrl),
