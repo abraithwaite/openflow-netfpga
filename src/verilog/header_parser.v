@@ -20,7 +20,6 @@ module header_parser
       input  [DATA_WIDTH-1:0]                in_data,
       input  [CTRL_WIDTH-1:0]                in_ctrl,
       input                                  in_wr,
-      output                                 in_rdy,
 
       // --- Interface to the next stage
       output reg [`OF_HEADER_REG_WIDTH-1:0]  header_bus,
@@ -81,8 +80,7 @@ module header_parser
                WAIT_EOP             = 0;
 
    // Register parameters for register requests
-   localparam NUM_WORDS_USED = ceildiv(`OF_HEADER_REG_WIDTH, `CPCI_NF2_DATA_WIDTH);
-   localparam NUM_REGS_USED = NUM_WORDS_USED;
+   localparam NUM_REGS_USED = ceildiv(`OF_HEADER_REG_WIDTH, `CPCI_NF2_DATA_WIDTH);
    localparam ADDR_WIDTH = log2(NUM_REGS_USED);
 
    // -------------------------Wires and Registers--------------------------//
@@ -123,9 +121,10 @@ module header_parser
          reg_data = 'h0;
       end
       else begin
-         if (addr == NUM_WORDS_USED - 1) begin
-            reg_data = {{24{1'b0}}, {last_header[addr * `CPCI_NF2_DATA_WIDTH
-               +: `OF_HEADER_REG_WIDTH % `CPCI_NF2_DATA_WIDTH]}};
+         if (addr == NUM_REGS_USED - 1) begin
+            // 24 0s, 8 signifigant bits
+            reg_data = {{(`OF_HEADER_REG_WIDTH - (`OF_HEADER_REG_WIDTH % `CPCI_NF2_DATA_WIDTH)){1'b0}},
+               {last_header[addr * `CPCI_NF2_DATA_WIDTH +: `OF_HEADER_REG_WIDTH % `CPCI_NF2_DATA_WIDTH]}};
          end
          else begin
             reg_data = last_header[ addr * `CPCI_NF2_DATA_WIDTH +: `CPCI_NF2_DATA_WIDTH];
