@@ -155,18 +155,18 @@ module user_data_path
    wire [`CPCI_NF2_DATA_WIDTH-1:0]  in_arb_in_reg_data;
    wire [UDP_REG_SRC_WIDTH-1:0]     in_arb_in_reg_src;
 
-   //------- output port lut wires/regs ------
-   wire [CTRL_WIDTH-1:0]            op_lut_in_ctrl;
-   wire [DATA_WIDTH-1:0]            op_lut_in_data;
-   wire                             op_lut_in_wr;
-   wire                             op_lut_in_rdy;
+   //------- output port lookup wires/regs ------
+   wire [CTRL_WIDTH-1:0]            opl_in_ctrl;
+   wire [DATA_WIDTH-1:0]            opl_in_data;
+   wire                             opl_in_wr;
+   wire                             opl_in_rdy;
 
-   wire                             op_lut_in_reg_req;
-   wire                             op_lut_in_reg_ack;
-   wire                             op_lut_in_reg_rd_wr_L;
-   wire [`UDP_REG_ADDR_WIDTH-1:0]   op_lut_in_reg_addr;
-   wire [`CPCI_NF2_DATA_WIDTH-1:0]  op_lut_in_reg_data;
-   wire [UDP_REG_SRC_WIDTH-1:0]     op_lut_in_reg_src;
+   wire                             opl_in_reg_req;
+   wire                             opl_in_reg_ack;
+   wire                             opl_in_reg_rd_wr_L;
+   wire [`UDP_REG_ADDR_WIDTH-1:0]   opl_in_reg_addr;
+   wire [`CPCI_NF2_DATA_WIDTH-1:0]  opl_in_reg_data;
+   wire [UDP_REG_SRC_WIDTH-1:0]     opl_in_reg_src;
 
    //------- output queues wires/regs ------
    wire [CTRL_WIDTH-1:0]            oq_in_ctrl;
@@ -197,10 +197,10 @@ module user_data_path
       .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
       .STAGE_NUMBER(IN_ARB_STAGE_NUM)
    ) input_arbiter (
-      .out_data             (op_lut_in_data),
-      .out_ctrl             (op_lut_in_ctrl),
-      .out_wr               (op_lut_in_wr),
-      .out_rdy              (op_lut_in_rdy),
+      .out_data             (opl_in_data),
+      .out_ctrl             (opl_in_ctrl),
+      .out_wr               (opl_in_wr),
+      .out_rdy              (opl_in_rdy),
 
       // --- Interface to the input queues
       .in_data_0            (in_data_0),
@@ -251,29 +251,46 @@ module user_data_path
       .reg_data_in          (in_arb_in_reg_data),
       .reg_src_in           (in_arb_in_reg_src),
 
-      .reg_req_out          (op_lut_in_reg_req),
-      .reg_ack_out          (op_lut_in_reg_ack),
-      .reg_rd_wr_L_out      (op_lut_in_reg_rd_wr_L),
-      .reg_addr_out         (op_lut_in_reg_addr),
-      .reg_data_out         (op_lut_in_reg_data),
-      .reg_src_out          (op_lut_in_reg_src),
+      .reg_req_out          (opl_in_reg_req),
+      .reg_ack_out          (opl_in_reg_ack),
+      .reg_rd_wr_L_out      (opl_in_reg_rd_wr_L),
+      .reg_addr_out         (opl_in_reg_addr),
+      .reg_data_out         (opl_in_reg_data),
+      .reg_src_out          (opl_in_reg_src),
 
       // --- Misc
       .reset                (reset),
       .clk                  (clk)
    );
 
-   header_parser #(
+   output_port_lookup #(
       .DATA_WIDTH(DATA_WIDTH),
       .CTRL_WIDTH(CTRL_WIDTH)
-   ) header_parser (
-      .in_data              (op_lut_in_data),
-      .in_ctrl              (op_lut_in_ctrl),
-      .in_wr                (op_lut_in_wr),
-      .in_rdy               (op_lut_in_rdy),
+      .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH),
+   ) output_port_lookup (
+      .in_data              (opl_in_data),
+      .in_ctrl              (opl_in_ctrl),
+      .in_wr                (opl_in_wr),
+      .in_rdy               (opl_in_rdy),
 
-      .header_bus           (),
-      .headers_valid        (),
+      .out_data             (oq_in_data),
+      .out_ctrl             (oq_in_ctrl),
+      .out_wr               (oq_in_wr),
+      .out_rdy              (oq_in_rdy),
+
+      .reg_req_in           (opl_in_reg_req),
+      .reg_ack_in           (opl_in_reg_ack),
+      .reg_rd_wr_L_in       (opl_in_reg_rd_wr_L),
+      .reg_addr_in          (opl_in_reg_addr),
+      .reg_data_in          (opl_in_reg_data),
+      .reg_src_in           (opl_in_reg_src),
+
+      .reg_req_out          (oq_in_reg_req),
+      .reg_ack_out          (oq_in_reg_ack),
+      .reg_rd_wr_L_out      (oq_in_reg_rd_wr_L),
+      .reg_addr_out         (oq_in_reg_addr),
+      .reg_data_out         (oq_in_reg_data),
+      .reg_src_out          (oq_in_reg_src),
 
       .clk                  (clk),
       .reset                (reset)
@@ -287,6 +304,12 @@ module user_data_path
       .NUM_OUTPUT_QUEUES(NUM_OUTPUT_QUEUES),
       .STAGE_NUM(OQ_STAGE_NUM)
    ) output_queues (// --- data path interface
+      // --- Interface to the previous module
+      .in_data          (oq_in_data),
+      .in_ctrl          (oq_in_ctrl),
+      .in_rdy           (oq_in_rdy),
+      .in_wr            (oq_in_wr),
+
       .out_data_0       (out_data_0),
       .out_ctrl_0       (out_ctrl_0),
       .out_wr_0         (out_wr_0),
@@ -326,12 +349,6 @@ module user_data_path
       .out_ctrl_7       (out_ctrl_7),
       .out_wr_7         (out_wr_7),
       .out_rdy_7        (out_rdy_7),
-
-      // --- Interface to the previous module
-      .in_data          (oq_in_data),
-      .in_ctrl          (oq_in_ctrl),
-      .in_rdy           (oq_in_rdy),
-      .in_wr            (oq_in_wr),
 
       // --- Register interface
       .reg_req_in       (oq_in_reg_req),
