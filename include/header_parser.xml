@@ -134,7 +134,7 @@
     </nf:constants>
     <nf:registers>
         <nf:register>
-            <nf:name>num_pkts_seen</nf:name>
+            <nf:name>last_headers_seen</nf:name>
             <nf:description>Number of packets sent</nf:description>
             <nf:type>of_header_register</nf:type>
         </nf:register>
