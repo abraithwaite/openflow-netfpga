@@ -12,7 +12,7 @@ force -freeze sim:/header_parser/in_wr 1'h1 75 -cancel 975
 for {set i 0} {$i < $cycles} {incr i} {
     set val [expr $i * 100]
     set data_word [lindex $data_list $i]
-    set ctrl_word [lindex $data_list $i]
+    set ctrl_word [lindex $ctrl_list $i]
     set start [expr 76 + val]
     set stop [expr 175 + val]
     echo $data_word $start $stop
