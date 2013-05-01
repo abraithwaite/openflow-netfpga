@@ -1,5 +1,5 @@
 import struct
-from socket import ntohl, ntohs, inet_aton, inet_ntoa
+from socket import ntohl, ntohs, inet_aton, inet_ntoa, htons
 import reg_defines_openflow as rd
 from hwReg import readReg
 
@@ -18,32 +18,53 @@ OF_STRUCT = (("OF_IN_PORT","H"),
              ("OF_PADDING", "BBB"),
             )
 
+OF_ACTION_CTRL = {x[0]: 1 << i for i, x in enumerate(OF_STRUCT)}
+
 class OFHeader(object):
     def __init__(self, buildstruct=None):
 
         self._struct = struct.Struct("!" + "".join(x[1] for x in OF_STRUCT))
 
-        if buildstruct is not None:
-            self.raw = [x for x in self._struct.unpack(buildstruct)]
-            self.format()
+        if (buildstruct is not None):
+            self.binbuild(buildstruct)
 
     def makestruct(self):
-        attrs = [i[0] for i in OF_STRUCT]
+        #attrs = [i[0] for i in OF_STRUCT]
+        self.raw = []
         for i in xrange(len(OF_STRUCT)):
             if i < 1:
-                self.raw[i] = getattr(self, attrs[i], 0)
+                self.raw.append(getattr(self, OF_STRUCT[i][0], 0))
             elif 0 < i < 3:
-                for j, x in enumerate(getattr(self, attrs[i], [0 for i in xrange(6)])):
-                    self.raw[j+6*(i-1)] = x
+                for j, x in enumerate(getattr(self, OF_STRUCT[i][0], [0 for i in xrange(6)])):
+                    #self.raw[j+6*(i-1)] = x
+                    self.raw.append(x)
             else:
-                self.raw[i+10] = getattr(self, attrs[i], 0)
+                #self.raw[i+10] = getattr(self, attrs[i], 0)
+                if (OF_STRUCT[i][1] == "H"):
+                    self.raw.append(htons(getattr(self, OF_STRUCT[i][0], 0)))
+                elif (OF_STRUCT[i][1] == "I"):
+                    # Wow, this is ugly.  Looking for a better way to do what I want which
+                    # is get a plain int from the formatted address
+                    self.raw.append(int(struct.unpack("I",
+                        inet_aton(getattr(self, OF_STRUCT[i][0], "0.0.0.0")))[0]))
+                else:
+                    self.raw.append(getattr(self, OF_STRUCT[i][0], 0))
 
+        # Append the padding
+        for i in xrange(len(OF_STRUCT[-1][1])-1):
+            self.raw.append(0)
 
+        self.packed = self._struct.pack(*self.raw)
+
+    def binbuild(self, initstruct):
+        self.raw = [x for x in self._struct.unpack(initstruct)]
+        self.format()
 
     def build(self, *args, **kwargs):
         ''' Expects kwargs that coorespond to OF_STRUCT with values to pack
             Values should all be ints with the exception of DL_SRC and DL_DST
-            which should be tuples of ints
+            which should be tuples of ints, and NW_SRC, NW_DST which are ipv4
+            formatted addresses
         '''
         for k,v in OF_STRUCT:
             if k in kwargs:
@@ -67,6 +88,13 @@ class OFHeader(object):
         self.pretty['OF_TP_DST'] = ntohs(self.raw[21])
         self.pretty['OF_PADDING'] = ""
 
+    def serialize(self):
+        ''' Takes the packed struct and serializes it into 32 bit chunks for use
+            with registers '''
+        return struct.unpack("I" * 9, self.packed)
+
+    def serialize_str(self):
+        return ["{:08x}".format(x) for x in self.serialize()]
 
 def read_last_header():
     y = []

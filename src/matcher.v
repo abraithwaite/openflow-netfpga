@@ -21,9 +21,10 @@ module matcher
       input                                  headers_valid,
 
       // --- Interface to the action processor
-      output reg [`OF_ACTION_DATA_WIDTH-1:0] action_data_bus,
-      output reg [`OF_ACTION_CTRL_WIDTH-1:0] action_ctrl_bus,
-      output reg                             action_valid,
+      output  [`OF_ACTION_DATA_WIDTH-1:0] action_data_bus,
+      output  [`OF_ACTION_CTRL_WIDTH-1:0] action_ctrl_bus,
+      output                              action_valid,
+      output                              action_hit,
 
       // --- Register interface
       input                               reg_req_in,
@@ -92,9 +93,14 @@ module matcher
    )
    unencoded_cam_lut_sm
    (
-      .lookup_req(headers_valid),
-      .lookup_cmp_data(header_bus),
-      .lookup_cmp_dmask({`OF_HEADER_REG_WIDTH{1'b0}}),
+      .lookup_req          (headers_valid),
+      .lookup_cmp_data     (header_bus),
+      .lookup_cmp_dmask    ({`OF_HEADER_REG_WIDTH{1'b0}}),
+
+      .lookup_ack          (action_valid),
+      .lookup_hit          (action_hit),
+      .lookup_data         ({action_ctrl_bus, action_data_bus}),
+      .lookup_address      (), // Unused?
 
       .reg_req_in          (reg_req_in),
       .reg_ack_in          (reg_ack_in),
