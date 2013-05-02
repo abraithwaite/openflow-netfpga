@@ -176,6 +176,7 @@ module matcher
       for ( j = 0; j < MATCHER_NUM_WORDS; j = j + 1 ) begin:cam_match_addr_gen
          assign cam_match_addr[j] = &cam_match_addr_bus_itr[j];
       end
+      assign cam_busy = |cam_busy_itr;
    endgenerate
 
    //------------------------- Logic-------------------------------
