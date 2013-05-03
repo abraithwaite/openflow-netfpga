@@ -160,17 +160,20 @@
 
    generate
       genvar ii;
+      // Used for lut
       for (ii=0; ii<NUM_DATA_WORDS_USED-1; ii=ii+1) begin:gen_wrdata
          assign wr_data[ii*`CPCI_NF2_DATA_WIDTH +: `CPCI_NF2_DATA_WIDTH] = reg_file[ii];
       end
       assign wr_data[DATA_WIDTH-1:(NUM_DATA_WORDS_USED-1)*`CPCI_NF2_DATA_WIDTH] = reg_file[NUM_DATA_WORDS_USED-1];
 
+      // Used for cam mask (don't cares)
       for (ii=0; ii<NUM_CMP_WORDS_USED-1; ii=ii+1) begin:gen_wrcmpdmask
          assign wr_cmp_dmask[ii*`CPCI_NF2_DATA_WIDTH +: `CPCI_NF2_DATA_WIDTH] = reg_file[ii+NUM_DATA_WORDS_USED];
       end
       assign wr_cmp_dmask[CMP_WIDTH-1:(NUM_CMP_WORDS_USED-1)*`CPCI_NF2_DATA_WIDTH]
              = reg_file[NUM_CMP_WORDS_USED+NUM_DATA_WORDS_USED-1];
 
+      // Used for cam lookup input data (to have mask applied)
       for (ii=0; ii<NUM_CMP_WORDS_USED-1; ii=ii+1) begin:gen_wrcmpdata
          assign wr_cmp_data[ii*`CPCI_NF2_DATA_WIDTH +: `CPCI_NF2_DATA_WIDTH]
                 = reg_file[ii+NUM_CMP_WORDS_USED+NUM_DATA_WORDS_USED];

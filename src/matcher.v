@@ -57,11 +57,11 @@ module matcher
 
    //------------------------- Signals-------------------------------
 
-   
    // --- LUT <-> CAM interface
 
    wire                             cam_busy;
    wire                             cam_match;
+   wire                             cam_wait;
 
    wire [`OF_NUM_ENTRIES-1:0]       cam_match_addr;
    wire [`OF_HEADER_REG_WIDTH-1:0]  cam_din, cam_data_mask;
@@ -80,6 +80,9 @@ module matcher
    wire [`OF_NUM_ENTRIES-1:0]       cam_data_mask_itr[MATCHER_NUM_WORDS-1:0];
    wire [`OF_NUM_ENTRIES-1:0]       cam_cmp_din_itr[MATCHER_NUM_WORDS-1:0];
    wire [`OF_NUM_ENTRIES-1:0]       cam_cmp_data_mask_itr[MATCHER_NUM_WORDS-1:0];
+
+
+   assign   cam_wait = cam_busy | cam_we;
 
    //------------------------- Modules-------------------------------
 
@@ -116,7 +119,7 @@ module matcher
       .reg_data_out        (reg_data_out),
       .reg_src_out         (reg_src_out), 
 
-      .cam_busy            (cam_busy),
+      .cam_busy            (cam_wait),
       .cam_match           (cam_match),
       .cam_match_addr      (cam_match_addr),
 
@@ -161,22 +164,23 @@ module matcher
          // 32 from CAM size
          if (i == MATCHER_NUM_WORDS - 1) begin
             assign cam_din_itr[i] = cam_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
-            assign cam_data_mask_itr[i] = cam_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
-            assign cam_cmp_din_itr[i] = cam_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
-            assign cam_cmp_data_mask_itr[i] = cam_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
+            assign cam_data_mask_itr[i] = cam_data_mask[`OF_HEADER_REG_WIDTH - 1: 32*i];
+            assign cam_cmp_din_itr[i] = cam_cmp_din[`OF_HEADER_REG_WIDTH - 1: 32*i];
+            assign cam_cmp_data_mask_itr[i] = cam_cmp_data_mask[`OF_HEADER_REG_WIDTH - 1: 32*i];
          end
          else begin
             assign cam_din_itr[i] = cam_din[32*i + 31 : 32*i];
-            assign cam_data_mask_itr[i] = cam_din[32*i + 31 : 32*i];
-            assign cam_cmp_din_itr[i] = cam_din[32*i + 31 : 32*i];
-            assign cam_cmp_data_mask_itr[i] = cam_din[32*i + 31 : 32*i];
+            assign cam_data_mask_itr[i] = cam_data_mask[32*i + 31 : 32*i];
+            assign cam_cmp_din_itr[i] = cam_cmp_din[32*i + 31 : 32*i];
+            assign cam_cmp_data_mask_itr[i] = cam_cmp_data_mask[32*i + 31 : 32*i];
          end
       end
 
-      for ( j = 0; j < MATCHER_NUM_WORDS; j = j + 1 ) begin:cam_match_addr_gen
+      for ( j = 0; j < `OF_NUM_ENTRIES; j = j + 1 ) begin:cam_match_addr_gen
          assign cam_match_addr[j] = &cam_match_addr_bus_itr[j];
       end
       assign cam_busy = |cam_busy_itr;
+      assign cam_match = &cam_match_itr;
    endgenerate
 
    //------------------------- Logic-------------------------------
