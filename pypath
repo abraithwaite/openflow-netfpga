@@ -1,0 +1,1 @@
+export PYTHONPATH=/home/abraithwaite/netfpga/projects/openflow/lib/Python:$PYTHONPATH

@@ -18,6 +18,8 @@ OF_STRUCT = (("OF_IN_PORT","H"),
              ("OF_PADDING", "BBB"),
             )
 
+OF_ACTION_STRUCT = OF_STRUCT[:-1] + (("OF_ACTION_CTRL", "I"),) + (("OF_PADDING", "BBB"),)
+
 OF_ACTION_CTRL = {x[0]: 1 << i for i, x in enumerate(OF_STRUCT)}
 
 class OFHeader(object):
@@ -26,7 +28,7 @@ class OFHeader(object):
         self._struct = struct.Struct("!" + "".join(x[1] for x in OF_STRUCT))
 
         if (buildstruct is not None):
-            self.binbuild(buildstruct)
+            self.to_raw(buildstruct)
 
     def makestruct(self):
         #attrs = [i[0] for i in OF_STRUCT]
@@ -56,7 +58,7 @@ class OFHeader(object):
 
         self.packed = self._struct.pack(*self.raw)
 
-    def binbuild(self, initstruct):
+    def to_raw(self, initstruct):
         self.raw = [x for x in self._struct.unpack(initstruct)]
         self.format()
 
