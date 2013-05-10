@@ -22,10 +22,10 @@ module action_processor
       input  [DATA_WIDTH-1:0]             in_data,
       input  [CTRL_WIDTH-1:0]             in_ctrl,
       input                               in_wr,
-      output                              in_rdy,
+      output reg                          in_rdy,
 
-      output [DATA_WIDTH-1:0]             out_data,
-      output [CTRL_WIDTH-1:0]             out_ctrl,
+      output reg [DATA_WIDTH-1:0]         out_data,
+      output reg [CTRL_WIDTH-1:0]         out_ctrl,
       output                              out_wr,
       input                               out_rdy,
 
@@ -57,15 +57,32 @@ module action_processor
    // Define the log2 function
    `LOG2_FUNC
 
+   //------------------------- Local -------------------------------
+
+   localparam  WAIT_LUT          = 1,
+               DO_PORT           = 2,
+               WAIT_EOP          = 0;
+
    //------------------------- Signals-------------------------------
 
    reg                           in_fifo_rd_en;
    reg                           out_wr_int;
 
+   reg [1:0]                     state;
+
    wire [OF_ACTION_DATA_WIDTH-1:0]    in_action_data;
    wire [OF_ACTION_CTRL_WIDTH-1:0]    in_action_ctrl;
 
+
    //------------------------- Local assignments -------------------------------
+   
+   assign reg_req_out =     reg_req_in;
+   assign reg_ack_out =     reg_ack_in;
+   assign reg_rd_wr_L_out = reg_rd_wr_L_in;
+   assign reg_addr_out =    reg_addr_in;
+   assign reg_data_out =    reg_data_in;
+   assign reg_src_out =     reg_src_in;
+
 
    //------------------------- Modules-------------------------------
 
@@ -87,16 +104,46 @@ module action_processor
 
    //------------------------- Logic-------------------------------
 
-   always @(*) begin
-      // Default values
-      out_wr_int = 0;
-      in_fifo_rd_en = 0;
-
-      if (!in_fifo_empty && out_rdy) begin
-         out_wr_int = 1;
-         in_fifo_rd_en = 1;
+   always @(posedge clk) begin
+      if(reset) begin
+         in_fifo_rd_en <= 0;
+         in_rdy <= 0;
+         // Do stuff
       end
-   end
-
+      else begin
+         // Default Case
+         out_data <= in_data;
+         case(state)
+            WAIT_LUT: begin
+               if (!in_fifo_empty) begin
+                  in_fifo_rd_en <= 1;
+                  in_rdy <= 1;
+                  state <= DO_PORT;
+               end
+            end
+            DO_PORT: begin
+               in_fifo_rd_en <= 0;
+               if (in_ctrl == `IO_QUEUE_STAGE_NUM) begin
+                  state <= WAIT_EOP;
+                  out_data[63:48] <= action_data_bus[`OF_IN_PORT + `OF_IN_PORT_POS - 1: `OF_IN_PORT_POS];
+               end
+            end
+            WAIT_EOP: begin
+               if (in_ctrl != 0) begin
+                  if (!in_fifo_empty) begin
+                     in_fifo_rd_en <= 1;
+                     in_rdy <= 1;
+                     state <= DO_PORT;
+                  end
+                  else begin
+                     in_fifo_rd_en <= 0;
+                     in_rdy <= 0;
+                     state <= WAIT_LUT;
+                  end
+               end // in_ctrl != 0
+            end // wait_eop
+         endcase
+      end // else
+   end // posedge clk
 
 endmodule

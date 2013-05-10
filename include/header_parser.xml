@@ -12,9 +12,20 @@
             <nf:value>16</nf:value>
         </nf:constant>
         <nf:constant>
+            <nf:name>:OF_OUT_PORT</nf:name>
+            <nf:description>Outgoing port(s) for packet</nf:description>
+            <nf:value>:OF_IN_PORT</nf:value>
+        </nf:constant>
+        <nf:constant>
             <nf:name>:OF_IN_PORT_POS</nf:name>
             <nf:description>Ingress port for packet register position</nf:description>
             <nf:value>0</nf:value>
+        </nf:constant>
+        <!-- Outgoing port is only used in the action field -->
+        <nf:constant>
+            <nf:name>:OF_OUT_PORT_POS</nf:name>
+            <nf:description>Outgoing port register position</nf:description>
+            <nf:value>:OF_IN_PORT_POS</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_DL_SRC</nf:name>

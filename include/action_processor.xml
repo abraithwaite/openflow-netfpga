@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nf:module xmlns:nf="http://github.com/NetFPGA/netfpga/wiki/RegisterSystem" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://github.com/NetFPGA/netfpga/wiki/RegisterSystem">
+    <nf:name>action_processor</nf:name>
+    <nf:prefix>ap</nf:prefix>
+    <nf:location>udp</nf:location>
+    <nf:description></nf:description>
+    <nf:blocksize>64</nf:blocksize>
+    <nf:constants>
+        <nf:constant>
+            <nf:name>:OF_AP_PORT_POS</nf:name>
+            <nf:value>0</nf:value>
+        </nf:constant>
+    </nf:constants>
+</nf:module>
+
