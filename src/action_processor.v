@@ -65,7 +65,7 @@ module action_processor
 
    //------------------------- Signals-------------------------------
 
-   reg                           in_fifo_rd_en;
+   reg                           action_fifo_rd_en;
    reg                           out_wr_int;
 
    reg [1:0]                     state;
@@ -91,13 +91,13 @@ module action_processor
       .MAX_DEPTH_BITS(2)
    ) action_fifo (
       .din           ({action_ctrl_bus, action_data_bus}),   // Data in
-      .wr_en         (in_wr),                // Write enable
-      .rd_en         (in_fifo_rd_en),        // Read the next word
+      .wr_en         (action_valid),                // Write enable
+      .rd_en         (action_fifo_rd_en),        // Read the next word
       .dout          ({in_action_ctrl, in_action_data}),
       .full          (),
-      .nearly_full   (in_fifo_nearly_full),
+      .nearly_full   (action_fifo_nearly_full),
       .prog_full     (),
-      .empty         (in_fifo_empty),
+      .empty         (action_fifo_empty),
       .reset         (reset),
       .clk           (clk)
    );
@@ -106,7 +106,7 @@ module action_processor
 
    always @(posedge clk) begin
       if(reset) begin
-         in_fifo_rd_en <= 0;
+         action_fifo_rd_en <= 0;
          in_rdy <= 0;
          // Do stuff
       end
@@ -115,28 +115,30 @@ module action_processor
          out_data <= in_data;
          case(state)
             WAIT_LUT: begin
-               if (!in_fifo_empty) begin
-                  in_fifo_rd_en <= 1;
+               if (!action_fifo_empty) begin
+                  action_fifo_rd_en <= 1;
                   in_rdy <= 1;
                   state <= DO_PORT;
                end
             end
             DO_PORT: begin
-               in_fifo_rd_en <= 0;
+               action_fifo_rd_en <= 0;
                if (in_ctrl == `IO_QUEUE_STAGE_NUM) begin
+                  if (in_action_ctrl[0] & 1'h1) begin
+                     out_data[63:48] <= action_data_bus[`OF_DST_PORT + `OF_DST_PORT_POS - 1: `OF_DST_PORT_POS];
+                  end
                   state <= WAIT_EOP;
-                  out_data[63:48] <= action_data_bus[`OF_IN_PORT + `OF_IN_PORT_POS - 1: `OF_IN_PORT_POS];
                end
             end
             WAIT_EOP: begin
                if (in_ctrl != 0) begin
-                  if (!in_fifo_empty) begin
-                     in_fifo_rd_en <= 1;
+                  if (!action_fifo_empty) begin
+                     action_fifo_rd_en <= 1;
                      in_rdy <= 1;
                      state <= DO_PORT;
                   end
                   else begin
-                     in_fifo_rd_en <= 0;
+                     action_fifo_rd_en <= 0;
                      in_rdy <= 0;
                      state <= WAIT_LUT;
                   end

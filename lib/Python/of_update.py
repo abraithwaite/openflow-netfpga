@@ -31,18 +31,31 @@ def write_table(position, wr_cmp_data, wr_cmp_mask, wr_action_data, wr_action_ct
     if type(wr_action_data) is not OFHeader:
         raise Exception("Must be OFHeader type")
 
-    if 0 > position or position > rd.OF_NUM_ENTRIES():
+    if not (0 <= position < rd.OF_NUM_ENTRIES()):
         raise Exception("Invalid position argument")
 
     cmp_din = struct.pack("I"*OF_LUT_CMP_WORDS, wr_cmp_data)
     cmp_mask = struct.pack("I"*OF_LUT_CMP_WORDS, wr_cmp_mask)
 
-    #TODO: You are here!
-    #TODO: Finish this function
+    for i in xrange(9):
+        writeReg(rd.MATCHER_BASE_ADDR()+i, struct.unpack_from("I", cmp_din, i))
+        writeReg(rd.MATCHER_BASE_ADDR()+9+i, struct.unpack_from("I", cmp_mask, i))
+
+    # Dummy write to write reg for tcam push
+
+    writeReg(rd.MATCHER_BASE_ADDR() + 0x1c, 1)
 
 
+def read_table():
+    for i in xrange(rd.OF_NUM_ENTRIES()):
+        vals = []
+        for i in xrange(9):
+            vals.append(readreg(rd.MATCHER_BASE_ADDR() + i))
+        s = struct.Struct("I" * 9)
+        mydata = s.pack(*vals)
+        of_h = OFHeader(mydata)
 
+        for x in of.fields:
+            print x[0], getattr(of, x[0])
 
-
-
-
+        print ""
