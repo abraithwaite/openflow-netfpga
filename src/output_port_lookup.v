@@ -139,6 +139,7 @@ module output_port_lookup
       .CTRL_WIDTH(CTRL_WIDTH),
       .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH)
    ) holding_fifo (
+
       .in_data              (in_data),
       .in_ctrl              (in_ctrl),
       .in_wr                (in_wr),
@@ -151,6 +152,7 @@ module output_port_lookup
 
       .clk                  (clk),
       .reset                (reset)
+
    );
 
    action_processor #(
@@ -158,6 +160,7 @@ module output_port_lookup
       .CTRL_WIDTH(CTRL_WIDTH),
       .UDP_REG_SRC_WIDTH (UDP_REG_SRC_WIDTH)
    ) action_processor (
+      // TODO: Register interface
       // Input from matcher
       .action_data_bus      (ap_in_act_data),
       .action_ctrl_bus      (ap_in_act_ctrl),
@@ -177,6 +180,7 @@ module output_port_lookup
 
       .clk                  (clk),
       .reset                (reset)
+
    );
 
 endmodule
