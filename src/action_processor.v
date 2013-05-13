@@ -87,7 +87,7 @@ module action_processor
    //------------------------- Modules-------------------------------
 
    fallthrough_small_fifo #(
-      .WIDTH(CTRL_WIDTH+DATA_WIDTH),
+      .WIDTH(`OF_ACTION_DATA_WIDTH+`OF_ACTION_CTRL_WIDTH),
       .MAX_DEPTH_BITS(2)
    ) action_fifo (
       .din           ({action_ctrl_bus, action_data_bus}),   // Data in

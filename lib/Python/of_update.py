@@ -1,7 +1,7 @@
 import struct
 import reg_defines_openflow as rd
-from hwReg import writeReg
-from of_header import OFHeader
+from hwReg import writeReg, readReg
+from of_header import OFHeader, OF_STRUCT
 from math import ceil
 
 # Defines
@@ -34,28 +34,52 @@ def write_table(position, wr_cmp_data, wr_cmp_mask, wr_action_data, wr_action_ct
     if not (0 <= position < rd.OF_NUM_ENTRIES()):
         raise Exception("Invalid position argument")
 
-    cmp_din = struct.pack("I"*OF_LUT_CMP_WORDS, wr_cmp_data)
-    cmp_mask = struct.pack("I"*OF_LUT_CMP_WORDS, wr_cmp_mask)
+    cmp_din = wr_cmp_mask.serialize()
+    cmp_mask = wr_cmp_data.serialize()
+    action_data = wr_action_data.serialize()
 
     for i in xrange(9):
-        writeReg(rd.MATCHER_BASE_ADDR()+i, struct.unpack_from("I", cmp_din, i))
-        writeReg(rd.MATCHER_BASE_ADDR()+9+i, struct.unpack_from("I", cmp_mask, i))
+        writeReg(rd.MATCHER_LUT_DATA_0_REG()+4*i, action_data[i])
+        writeReg(rd.MATCHER_TCAM_DATA_0_REG()+4*i, cmp_din[i])
+        writeReg(rd.MATCHER_TCAM_MASK_0_REG()+4*i, cmp_mask[i])
 
     # Dummy write to write reg for tcam push
+    import time
+    time.sleep(1)
+    writeReg(rd.MATCHER_WRITE_REG_REG(), position)
+    #writeReg(rd.MATCHER_LUT_DATA_0_REG()+0x1c, position)
+    print [hex(x) for x in cmp_din]
 
-    writeReg(rd.MATCHER_BASE_ADDR() + 0x1c, 1)
+def read_table(index):
+    #for i in xrange(rd.OF_NUM_ENTRIES()):
+    import time
+    #writeReg(rd.MATCHER_LUT_DATA_0_REG() + 0x1b, index)
+    writeReg(rd.MATCHER_READ_REG_REG(), index)
+    time.sleep(1)
 
-
-def read_table():
-    for i in xrange(rd.OF_NUM_ENTRIES()):
-        vals = []
-        for i in xrange(9):
-            vals.append(readreg(rd.MATCHER_BASE_ADDR() + i))
-        s = struct.Struct("I" * 9)
-        mydata = s.pack(*vals)
+    vals, vals2, vals3= [], [], []
+    for j in xrange(9):
+        vals.append(readReg(rd.MATCHER_LUT_DATA_0_REG()+4*j))
+        vals2.append(readReg(rd.MATCHER_TCAM_DATA_0_REG()+4*j))
+        vals3.append(readReg(rd.MATCHER_TCAM_MASK_0_REG()+4*j))
+    print [hex(x) for x in vals]
+    print [hex(x) for x in vals2]
+    print [hex(x) for x in vals3]
+    tot = [vals, vals2, vals3]
+    for k in xrange(3):
+        mydata = struct.pack("I"*9, *tot[k])
         of_h = OFHeader(mydata)
 
-        for x in of.fields:
-            print x[0], getattr(of, x[0])
+        for x in OF_STRUCT:
+            print x[0], of_h.pretty.get(x[0], -1)
 
         print ""
+
+
+act_data, cmp_data, cmp_mask = OFHeader(), OFHeader(), OFHeader()
+act_data.build(OF_IN_PORT=1, OF_DL_SRC=(0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x00), OF_TP_DST=0xDACF, OF_NW_DST="255.192.0.55")
+write_table(30, act_data, act_data, act_data, None)
+
+import time
+time.sleep(1)
+read_table(30)

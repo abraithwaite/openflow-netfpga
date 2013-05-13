@@ -89,7 +89,7 @@ module matcher
    unencoded_cam_lut_sm
    #(
       .CMP_WIDTH(`OF_HEADER_REG_WIDTH),
-      .DATA_WIDTH(`OF_ACTION_DATA_WIDTH + `OF_ACTION_CTRL_WIDTH),
+      .DATA_WIDTH(`OF_ACTION_DATA_WIDTH),
       .TAG(`MATCHER_BLOCK_ADDR),
       .LUT_DEPTH(`OF_NUM_ENTRIES),
       .REG_ADDR_WIDTH(`MATCHER_REG_ADDR_WIDTH)
@@ -102,7 +102,7 @@ module matcher
 
       .lookup_ack          (action_valid),
       .lookup_hit          (action_hit),
-      .lookup_data         ({action_ctrl_bus, action_data_bus}),
+      .lookup_data         (action_data_bus),
       .lookup_address      (), // Unused?
 
       .reg_req_in          (reg_req_in),
@@ -139,9 +139,7 @@ module matcher
       for ( i = 0; i < MATCHER_NUM_WORDS; i = i + 1 ) begin:cam_gen
 
          wire [`OF_NUM_ENTRIES -1 : 0] cam_match_addr_tmp;
-         for ( j = 0; j < `OF_NUM_ENTRIES; j = j + 1 ) begin:cam_match_bit_gen
-            assign cam_match_addr_bus_itr[j][i] = cam_match_addr_tmp[j];
-         end
+
          srl_cam_unencoded_32x32 srl_cam_unencoded
          (
             // --- Inputs
@@ -160,6 +158,9 @@ module matcher
 
             .clk              (clk)
          );
+         for ( j = 0; j < `OF_NUM_ENTRIES; j = j + 1 ) begin:cam_match_bit_gen
+            assign cam_match_addr_bus_itr[j][i] = cam_match_addr_tmp[j];
+         end
 
          // 32 from CAM size
          if (i == MATCHER_NUM_WORDS - 1) begin

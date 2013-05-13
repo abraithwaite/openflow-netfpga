@@ -37,8 +37,7 @@ class OFHeader(object):
             if i < 1:
                 self.raw.append(getattr(self, OF_STRUCT[i][0], 0))
             elif 0 < i < 3:
-                for j, x in enumerate(getattr(self, OF_STRUCT[i][0], [0 for i in xrange(6)])):
-                    #self.raw[j+6*(i-1)] = x
+                for x in getattr(self, OF_STRUCT[i][0], [0 for i in xrange(6)]):
                     self.raw.append(x)
             else:
                 #self.raw[i+10] = getattr(self, attrs[i], 0)
@@ -50,6 +49,7 @@ class OFHeader(object):
                     self.raw.append(int(struct.unpack("I",
                         inet_aton(getattr(self, OF_STRUCT[i][0], "0.0.0.0")))[0]))
                 else:
+                    # Bytes don't need htons
                     self.raw.append(getattr(self, OF_STRUCT[i][0], 0))
 
         # Append the padding
@@ -92,7 +92,8 @@ class OFHeader(object):
 
     def serialize(self):
         ''' Takes the packed struct and serializes it into 32 bit chunks for use
-            with registers '''
+            with registers
+        '''
         return struct.unpack("I" * 9, self.packed)
 
     def serialize_str(self):
