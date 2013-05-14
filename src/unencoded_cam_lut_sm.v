@@ -114,7 +114,7 @@
    reg [LUT_DEPTH_BITS:0]                reset_count;
    reg                                   state;
 
-   wire [REG_ADDR_WIDTH-3:0]             addr;
+   wire [REG_ADDR_WIDTH-1:0]             addr;
    wire [`UDP_REG_ADDR_WIDTH-REG_ADDR_WIDTH-1:0] tag_addr;
 
    wire                                  addr_good;
@@ -152,7 +152,7 @@
    assign rd_cmp_dmask        = lut_rd_data[DATA_WIDTH+2*CMP_WIDTH-1:DATA_WIDTH+CMP_WIDTH];
 
 
-   assign addr                = reg_addr_in[REG_ADDR_WIDTH-1:2];            // addresses in this module
+   assign addr                = reg_addr_in[REG_ADDR_WIDTH-1:0];            // addresses in this module
    assign tag_addr            = reg_addr_in[`UDP_REG_ADDR_WIDTH - 1:REG_ADDR_WIDTH];
 
    assign addr_good           = addr < NUM_REGS_USED;   // address is used in this module

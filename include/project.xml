@@ -35,8 +35,8 @@
     <nf:group name="udp">
       <nf:instance name="in_arb" base="0x02000100"/>
       <nf:instance name="header_parser" />
-      <nf:instance name="matcher" />
       <nf:instance name="bram_output_queues" base="0x02000300"/>
+      <nf:instance name="matcher" base="0x02001000"/>
     </nf:group>
   </nf:memalloc>
 </nf:project>

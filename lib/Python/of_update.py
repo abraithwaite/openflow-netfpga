@@ -1,4 +1,5 @@
 import struct
+import time
 import reg_defines_openflow as rd
 from hwReg import writeReg, readReg
 from of_header import OFHeader, OF_STRUCT
@@ -44,18 +45,13 @@ def write_table(position, wr_cmp_data, wr_cmp_mask, wr_action_data, wr_action_ct
         writeReg(rd.MATCHER_TCAM_MASK_0_REG()+4*i, cmp_mask[i])
 
     # Dummy write to write reg for tcam push
-    import time
     time.sleep(1)
     writeReg(rd.MATCHER_WRITE_REG_REG(), position)
-    #writeReg(rd.MATCHER_LUT_DATA_0_REG()+0x1c, position)
     print [hex(x) for x in cmp_din]
 
 def read_table(index):
-    #for i in xrange(rd.OF_NUM_ENTRIES()):
-    import time
-    #writeReg(rd.MATCHER_LUT_DATA_0_REG() + 0x1b, index)
     writeReg(rd.MATCHER_READ_REG_REG(), index)
-    time.sleep(1)
+    time.sleep(2)
 
     vals, vals2, vals3= [], [], []
     for j in xrange(9):
@@ -78,8 +74,7 @@ def read_table(index):
 
 act_data, cmp_data, cmp_mask = OFHeader(), OFHeader(), OFHeader()
 act_data.build(OF_IN_PORT=1, OF_DL_SRC=(0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x00), OF_TP_DST=0xDACF, OF_NW_DST="255.192.0.55")
-write_table(30, act_data, act_data, act_data, None)
+write_table(2, act_data, act_data, act_data, None)
 
-import time
 time.sleep(1)
-read_table(30)
+read_table(2)
