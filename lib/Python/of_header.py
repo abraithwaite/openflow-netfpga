@@ -15,7 +15,9 @@ OF_STRUCT = (("OF_IN_PORT","H"),
              ("OF_NW_DST", "I"),
              ("OF_TP_SRC", "H"),
              ("OF_TP_DST", "H"),
-             ("OF_PADDING", "BBB"),
+             ("OF_PADDING", "B"),
+             ("OF_PADDING2", "B"),
+             ("OF_PADDING3", "B"),
             )
 
 OF_ACTION_STRUCT = OF_STRUCT[:-1] + (("OF_ACTION_CTRL", "I"),) + (("OF_PADDING", "BBB"),)
@@ -35,7 +37,7 @@ class OFHeader(object):
         self.raw = []
         for i in xrange(len(OF_STRUCT)):
             if i < 1:
-                self.raw.append(getattr(self, OF_STRUCT[i][0], 0))
+                self.raw.append(htons(getattr(self, OF_STRUCT[i][0], 0)))
             elif 0 < i < 3:
                 for x in getattr(self, OF_STRUCT[i][0], [0 for i in xrange(6)]):
                     self.raw.append(x)
@@ -73,6 +75,7 @@ class OFHeader(object):
                 setattr(self, k, kwargs.get(k))
         self.makestruct()
         self.format()
+        return self
 
     def format(self):
         self.pretty = {}
@@ -89,6 +92,8 @@ class OFHeader(object):
         self.pretty['OF_TP_SRC'] = ntohs(self.raw[20])
         self.pretty['OF_TP_DST'] = ntohs(self.raw[21])
         self.pretty['OF_PADDING'] = ""
+        self.pretty['OF_PADDING2'] = ""
+        self.pretty['OF_PADDING3'] = ""
 
     def serialize(self):
         ''' Takes the packed struct and serializes it into 32 bit chunks for use
@@ -110,3 +115,6 @@ def read_last_header():
     of = OFHeader(mydata)
     return of
 
+def default_route():
+    ''' Use this as a starting point for masks.  Change any fields as necessary to unmask signifigant bits '''
+    return OFHeader().build(OF_IN_PORT=0xffff, OF_DL_SRC=(0xff, 0xff, 0xff, 0xff, 0xff, 0xff), OF_DL_DST=(0xff, 0xff, 0xff, 0xff, 0xff, 0xff), OF_VLAN_ID=0xffff, OF_VLAN_PCP=0xff, OF_DL_TYPE=0xffff, OF_NW_TOS=0xff, OF_NW_PROTO=0xff, OF_NW_SRC="255.255.255.255", OF_NW_DST="255.255.255.255", OF_TP_SRC=0xffff, OF_TP_DST=0xffff)

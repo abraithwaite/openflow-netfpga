@@ -39,7 +39,7 @@
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_ACTION_CTRL_WIDTH</nf:name>
-            <nf:value>32</nf:value>
+            <nf:value>24</nf:value>
         </nf:constant>
         <nf:constant>
             <nf:name>:OF_NUM_ENTRIES</nf:name>

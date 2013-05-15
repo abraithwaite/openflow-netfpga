@@ -14,7 +14,7 @@ OF_LUT_CMP_DATA_OFF = OF_LUT_DATA_WORDS + OF_LUT_CMP_WORDS
 
 # Arguments in this function not to be confused with their verilog counterparts
 # They have the same name for different purpopses.  python wr_cmp_data != verilog wr_cmp_data
-def write_table(position, wr_cmp_data, wr_cmp_mask, wr_action_data, wr_action_ctrl):
+def write_table(position, wr_cmp_data, wr_cmp_mask, wr_action_data):
     '''
         position: priority in table (0-31, 0 highest priority)
         wr_cmp_data: headers to look for
@@ -66,15 +66,6 @@ def read_table(index):
         mydata = struct.pack("I"*9, *tot[k])
         of_h = OFHeader(mydata)
 
-        for x in OF_STRUCT:
-            print x[0], of_h.pretty.get(x[0], -1)
-
-        print ""
+        print [(x[0], of_h.pretty.get(x[0], -1)) for x in OF_STRUCT]
 
 
-act_data, cmp_data, cmp_mask = OFHeader(), OFHeader(), OFHeader()
-act_data.build(OF_IN_PORT=1, OF_DL_SRC=(0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x00), OF_TP_DST=0xDACF, OF_NW_DST="255.192.0.55")
-write_table(2, act_data, act_data, act_data, None)
-
-time.sleep(1)
-read_table(2)

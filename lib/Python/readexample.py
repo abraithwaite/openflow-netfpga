@@ -1,7 +1,7 @@
 import struct
 from hwReg import readReg
-import reg_defines_add_registers_nic as rd
-from of_header import OFHeader
+import reg_defines_openflow as rd
+from of_header import OFHeader, OF_STRUCT
 from socket import ntohl, ntohs, inet_aton, inet_ntoa
 
 y = []
@@ -18,5 +18,5 @@ of = OFHeader(mydata)
 
 print ""
 
-for x in of.fields:
-    print x[0], getattr(of, x[0])
+for x in OF_STRUCT:
+    print x[0], of.pretty.get(x[0], 0)

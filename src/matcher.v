@@ -81,28 +81,34 @@ module matcher
    wire [`OF_NUM_ENTRIES-1:0]       cam_cmp_din_itr[MATCHER_NUM_WORDS-1:0];
    wire [`OF_NUM_ENTRIES-1:0]       cam_cmp_data_mask_itr[MATCHER_NUM_WORDS-1:0];
 
+   reg                              in_headers_valid_d1;
+
+   wire                             in_lut_lookup_req;
 
    assign   cam_wait = cam_busy | cam_we;
+
+   // Prevent doing multiple consecutive lookups for the same headers
+   assign   in_lut_lookup_req = headers_valid && !in_headers_valid_d1;
 
    //------------------------- Modules-------------------------------
 
    unencoded_cam_lut_sm
    #(
       .CMP_WIDTH(`OF_HEADER_REG_WIDTH),
-      .DATA_WIDTH(`OF_ACTION_DATA_WIDTH),
+      .DATA_WIDTH(`OF_ACTION_DATA_WIDTH + `OF_ACTION_CTRL_WIDTH),
       .TAG(`MATCHER_BLOCK_ADDR),
       .LUT_DEPTH(`OF_NUM_ENTRIES),
       .REG_ADDR_WIDTH(`MATCHER_REG_ADDR_WIDTH)
    )
    unencoded_cam_lut_sm
    (
-      .lookup_req          (headers_valid),
+      .lookup_req          (in_lut_lookup_req),
       .lookup_cmp_data     (header_bus),
       .lookup_cmp_dmask    ({`OF_HEADER_REG_WIDTH{1'b0}}),
 
       .lookup_ack          (action_valid),
       .lookup_hit          (action_hit),
-      .lookup_data         (action_data_bus),
+      .lookup_data         ({action_ctrl_bus, action_data_bus}),
       .lookup_address      (), // Unused?
 
       .reg_req_in          (reg_req_in),
@@ -185,5 +191,13 @@ module matcher
    endgenerate
 
    //------------------------- Logic-------------------------------
+   always @(posedge clk) begin
+      if (reset) begin
+         in_headers_valid_d1 <= 0;
+      end
+      else begin
+         in_headers_valid_d1 <= headers_valid;
+      end
+   end
 
 endmodule

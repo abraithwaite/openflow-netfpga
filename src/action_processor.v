@@ -26,7 +26,7 @@ module action_processor
 
       output reg [DATA_WIDTH-1:0]         out_data,
       output reg [CTRL_WIDTH-1:0]         out_ctrl,
-      output                              out_wr,
+      output reg                          out_wr,
       input                               out_rdy,
 
       // --- Interface to the matcher 
@@ -108,11 +108,17 @@ module action_processor
       if(reset) begin
          action_fifo_rd_en <= 0;
          in_rdy <= 0;
+         state <= WAIT_LUT;
+         out_data <= 0;
+         out_ctrl <= 0;
+         out_wr <= 0;
          // Do stuff
       end
       else begin
          // Default Case
-         out_data <= in_data;
+         out_wr <= 0;
+         out_data <= 0;
+         out_ctrl <= 0;
          case(state)
             WAIT_LUT: begin
                if (!action_fifo_empty) begin
@@ -123,14 +129,20 @@ module action_processor
             end
             DO_PORT: begin
                action_fifo_rd_en <= 0;
+               out_data <= in_data;
+               out_ctrl <= in_ctrl;
+               out_wr <= 1;
                if (in_ctrl == `IO_QUEUE_STAGE_NUM) begin
                   if (in_action_ctrl[0] & 1'h1) begin
-                     out_data[63:48] <= action_data_bus[`OF_DST_PORT + `OF_DST_PORT_POS - 1: `OF_DST_PORT_POS];
+                     out_data[63:48] <= in_action_data[`OF_DST_PORT + `OF_DST_PORT_POS - 1: `OF_DST_PORT_POS];
                   end
                   state <= WAIT_EOP;
                end
             end
             WAIT_EOP: begin
+               out_data <= in_data;
+               out_ctrl <= in_ctrl;
+               out_wr <= 1;
                if (in_ctrl != 0) begin
                   if (!action_fifo_empty) begin
                      action_fifo_rd_en <= 1;
@@ -138,7 +150,6 @@ module action_processor
                      state <= DO_PORT;
                   end
                   else begin
-                     action_fifo_rd_en <= 0;
                      in_rdy <= 0;
                      state <= WAIT_LUT;
                   end
