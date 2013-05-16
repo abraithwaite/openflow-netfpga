@@ -13,8 +13,6 @@ module action_processor
    #(
       parameter DATA_WIDTH = 64,
       parameter CTRL_WIDTH = DATA_WIDTH/8,
-      parameter OF_ACTION_DATA_WIDTH = `OF_ACTION_DATA_WIDTH,
-      parameter OF_ACTION_CTRL_WIDTH = `OF_ACTION_CTRL_WIDTH,
       parameter UDP_REG_SRC_WIDTH = 2
    )
    (
@@ -33,6 +31,7 @@ module action_processor
       input [`OF_ACTION_DATA_WIDTH-1:0]   action_data_bus,
       input [`OF_ACTION_CTRL_WIDTH-1:0]   action_ctrl_bus,
       input                               action_valid,
+      input                               action_hit,
 
       // --- Register interface
       input                               reg_req_in,
@@ -68,12 +67,11 @@ module action_processor
    //------------------------- Signals-------------------------------
 
    reg                           action_fifo_rd_en;
-   reg                           out_wr_int;
 
    reg [2:0]                     state;
 
-   wire [OF_ACTION_DATA_WIDTH-1:0]    in_action_data;
-   wire [OF_ACTION_CTRL_WIDTH-1:0]    in_action_ctrl;
+   wire [`OF_ACTION_DATA_WIDTH-1:0]    in_action_data;
+   wire [`OF_ACTION_CTRL_WIDTH-1:0]    in_action_ctrl;
 
 
    //------------------------- Local assignments -------------------------------

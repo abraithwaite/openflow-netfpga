@@ -21,10 +21,10 @@ module matcher
       input                                  headers_valid,
 
       // --- Interface to the action processor
-      output  [`OF_ACTION_DATA_WIDTH-1:0] action_data_bus,
-      output  [`OF_ACTION_CTRL_WIDTH-1:0] action_ctrl_bus,
-      output                              action_valid,
-      output                              action_hit,
+      output [`OF_ACTION_DATA_WIDTH-1:0] action_data_bus,
+      output [`OF_ACTION_CTRL_WIDTH-1:0] action_ctrl_bus,
+      output                             action_valid,
+      output                             action_hit,
 
       // --- Register interface
       input                               reg_req_in,
