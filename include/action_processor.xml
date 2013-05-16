@@ -10,6 +10,14 @@
             <nf:name>:OF_AP_PORT_POS</nf:name>
             <nf:value>0</nf:value>
         </nf:constant>
+        <nf:constant>
+            <nf:name>:OF_AP_DL_DST_POS</nf:name>
+            <nf:value>1</nf:value>
+        </nf:constant>
+        <nf:constant>
+            <nf:name>:OF_AP_DL_SRC_POS</nf:name>
+            <nf:value>2</nf:value>
+        </nf:constant>
     </nf:constants>
 </nf:module>
 

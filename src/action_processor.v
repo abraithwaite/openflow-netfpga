@@ -61,6 +61,8 @@ module action_processor
 
    localparam  WAIT_LUT          = 1,
                DO_PORT           = 2,
+               DO_DL_DST_SRC_H   = 3,
+               DO_DL_SRC_L       = 4,
                WAIT_EOP          = 0;
 
    //------------------------- Signals-------------------------------
@@ -68,7 +70,7 @@ module action_processor
    reg                           action_fifo_rd_en;
    reg                           out_wr_int;
 
-   reg [1:0]                     state;
+   reg [2:0]                     state;
 
    wire [OF_ACTION_DATA_WIDTH-1:0]    in_action_data;
    wire [OF_ACTION_CTRL_WIDTH-1:0]    in_action_ctrl;
@@ -133,11 +135,42 @@ module action_processor
                out_ctrl <= in_ctrl;
                out_wr <= 1;
                if (in_ctrl == `IO_QUEUE_STAGE_NUM) begin
-                  if (in_action_ctrl[0] & 1'h1) begin
+                  if (in_action_ctrl[0]) begin
                      out_data[63:48] <= in_action_data[`OF_DST_PORT + `OF_DST_PORT_POS - 1: `OF_DST_PORT_POS];
                   end
-                  state <= WAIT_EOP;
+                  if (in_action_ctrl[`OF_AP_DL_SRC_POS:`OF_AP_DL_DST_POS])begin
+                     state <= DO_DL_DST_SRC_H;
+                  end
+                  else begin
+                     state <= WAIT_EOP;
+                  end
                end
+            end
+            DO_DL_DST_SRC_H: begin
+               out_data <= in_data;
+               out_ctrl <= in_ctrl;
+               out_wr <= 1;
+               if(in_ctrl == 0) begin
+                  if (in_action_ctrl[`OF_AP_DL_DST_POS]) begin
+                     out_data[63:16] <= in_action_data[`OF_DL_DST + `OF_DL_DST_POS - 1 : `OF_DL_DST_POS];
+                  end
+                  if (in_action_ctrl[`OF_AP_DL_SRC_POS]) begin
+                     out_data[15:0] <= in_action_data[`OF_DL_SRC_POS+`OF_DL_SRC-1 : `OF_DL_SRC_POS+`OF_DL_SRC-16];
+                     state <= DO_DL_SRC_L;
+                  end
+                  else begin
+                     state <= WAIT_EOP;
+                  end
+               end
+            end
+            DO_DL_SRC_L: begin
+               out_data <= in_data;
+               out_ctrl <= in_ctrl;
+               out_wr <= 1;
+               if(in_ctrl == 0) begin
+                  out_data[63:32] <= in_action_data[`OF_DL_SRC_POS + `OF_DL_SRC - 17 : `OF_DL_SRC_POS];
+               end
+               state <= WAIT_EOP;
             end
             WAIT_EOP: begin
                out_data <= in_data;

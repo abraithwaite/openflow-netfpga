@@ -39,7 +39,7 @@ class OFHeader(object):
             if i < 1:
                 self.raw.append(htons(getattr(self, OF_STRUCT[i][0], 0)))
             elif 0 < i < 3:
-                for x in getattr(self, OF_STRUCT[i][0], [0 for i in xrange(6)]):
+                for x in getattr(self, OF_STRUCT[i][0], [0 for i in xrange(6)])[::-1]:
                     self.raw.append(x)
             else:
                 #self.raw[i+10] = getattr(self, attrs[i], 0)

@@ -8,13 +8,17 @@ set matcher_reg_addr_base 1024
 # Data to return from CAM
 # Mask for rule (1s are don't cares)
 # data to look for.
-set reg_data_in {cdabffff 563412ef 100f100f 0000100f 00080000 29203306 a80c2b7d 50baa1c0 ffffff00
-                 ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff
-                 cdab0400 563412ef 100f100f 0000100f 00080000 29203306 a80c2b7d 50baa1c0 00000000}
-                # ^ Start of packet                                             End of pkt  ^^ action
 
-set pkt_data_in {0000000000040000 0bae6648b13bf3b5 d0326e7808000923 0000000000000006
-                 0000e3bac4bf1028 00acf2dfc58b0000 0000f2dfc58b0000 0000f2dfc58b0000}
+set reg_data_in {de770004 cafedeca deadbeef 00005555 00000000 00000000 00000000 00000000 00000700
+                 ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff 000000ff ffffff00 000000ff
+                 00000000 00000000 00000000 00000000 00000000 00000000 a80b0100 000000c0 00000000}
+
+                #    IOHDR           DL_DST   SRCH   SRCL  type h   len/id  foff ttl/proto
+                #v--------------v v----------vv--v v------vv--vvvvv v------vv--vv--v
+set pkt_data_in {0000000000040000 ffffffffffff0000 d0326e7808000923 0000000000000006
+                 0000e3bac4bfc0a8 0b01f2dfc58b0000 0000f2dfc58b0000 0000f2dfc58b0000}
+                #^--^^------^^--- ---^
+                #      IPSRC   IPDST
 set pkt_ctrl_in {ff 00 00 00 00 00 00 02}
 
 force -drive sim:/$module/clk 0 0, 1 {50 ps} -r 100

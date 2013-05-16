@@ -37,6 +37,7 @@
       <nf:instance name="header_parser" />
       <nf:instance name="bram_output_queues" base="0x02000300"/>
       <nf:instance name="matcher" base="0x02001000"/>
+      <nf:instance name="action_processor" />
     </nf:group>
   </nf:memalloc>
 </nf:project>
