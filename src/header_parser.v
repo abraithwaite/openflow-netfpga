@@ -33,12 +33,12 @@ module header_parser
       input  [`CPCI_NF2_DATA_WIDTH-1:0]     reg_data_in,
       input  [UDP_REG_SRC_WIDTH-1:0]        reg_src_in,
 
-      output reg                            reg_req_out,
-      output reg                            reg_ack_out,
-      output reg                            reg_rd_wr_L_out,
-      output reg [`UDP_REG_ADDR_WIDTH-1:0]  reg_addr_out,
-      output reg [`CPCI_NF2_DATA_WIDTH-1:0] reg_data_out,
-      output reg [UDP_REG_SRC_WIDTH-1:0]    reg_src_out,
+      output                            reg_req_out,
+      output                            reg_ack_out,
+      output                            reg_rd_wr_L_out,
+      output [`UDP_REG_ADDR_WIDTH-1:0]  reg_addr_out,
+      output [`CPCI_NF2_DATA_WIDTH-1:0] reg_data_out,
+      output [UDP_REG_SRC_WIDTH-1:0]    reg_src_out,
 
       // --- Misc
       input                                  reset,
