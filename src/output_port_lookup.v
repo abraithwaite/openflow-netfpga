@@ -57,6 +57,7 @@ module output_port_lookup
    wire [`OF_ACTION_DATA_WIDTH-1:0]    ap_in_act_data;
    wire [`OF_ACTION_CTRL_WIDTH-1:0]    ap_in_act_ctrl;
    wire                                ap_in_act_valid;
+   wire                                ap_in_act_hit;
 
    wire [`OF_HEADER_REG_WIDTH-1:0]  mtch_in_header;
    wire                             mtch_in_header_valid;
@@ -114,6 +115,7 @@ module output_port_lookup
       .action_data_bus      (ap_in_act_data),
       .action_ctrl_bus      (ap_in_act_ctrl),
       .action_valid         (ap_in_act_valid),
+      .action_hit           (ap_in_act_hit),
 
       // --- Register interface
       .reg_req_in           (mtch_in_reg_req),
@@ -164,6 +166,7 @@ module output_port_lookup
       .action_data_bus      (ap_in_act_data),
       .action_ctrl_bus      (ap_in_act_ctrl),
       .action_valid         (ap_in_act_valid),
+      .action_hit           (ap_in_act_hit),
 
       // Input from holding FIFO
       .in_data              (ap_in_data),
