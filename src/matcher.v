@@ -21,10 +21,10 @@ module matcher
       input                                  headers_valid,
 
       // --- Interface to the action processor
-      output [`OF_ACTION_DATA_WIDTH-1:0] action_data_bus,
-      output [`OF_ACTION_CTRL_WIDTH-1:0] action_ctrl_bus,
-      output                             action_valid,
-      output                             action_hit,
+      output reg [`OF_ACTION_DATA_WIDTH-1:0] action_data_bus,
+      output reg [`OF_ACTION_CTRL_WIDTH-1:0] action_ctrl_bus,
+      output reg                             action_valid,
+      output reg                             action_hit,
 
       // --- Register interface
       input                               reg_req_in,
@@ -56,6 +56,11 @@ module matcher
    localparam MATCHER_NUM_WORDS = ceildiv(`OF_HEADER_REG_WIDTH, `CPCI_NF2_DATA_WIDTH);
 
    //------------------------- Signals-------------------------------
+
+   wire [`OF_ACTION_DATA_WIDTH-1:0] out_action_data_bus;
+   wire [`OF_ACTION_CTRL_WIDTH-1:0] out_action_ctrl_bus;
+   wire                             out_action_valid;
+   wire                             out_action_hit;
 
    // --- LUT <-> CAM interface
 
@@ -106,9 +111,9 @@ module matcher
       .lookup_cmp_data     (header_bus),
       .lookup_cmp_dmask    ({`OF_HEADER_REG_WIDTH{1'b0}}),
 
-      .lookup_ack          (action_valid),
-      .lookup_hit          (action_hit),
-      .lookup_data         ({action_ctrl_bus, action_data_bus}),
+      .lookup_ack          (out_action_valid),
+      .lookup_hit          (out_action_hit),
+      .lookup_data         ({out_action_ctrl_bus, out_action_data_bus}),
       .lookup_address      (), // Unused?
 
       .reg_req_in          (reg_req_in),
@@ -192,11 +197,26 @@ module matcher
 
    //------------------------- Logic-------------------------------
    always @(posedge clk) begin
+
+      action_valid <= out_action_valid;
+      action_hit <= out_action_hit;
+
       if (reset) begin
          in_headers_valid_d1 <= 0;
+         action_data_bus <= 0;
+         action_ctrl_bus <= 0;
       end
       else begin
          in_headers_valid_d1 <= headers_valid;
+
+         if(out_action_valid && out_action_hit) begin
+            action_data_bus <= out_action_data_bus;
+            action_ctrl_bus <= out_action_ctrl_bus;
+         end
+         else begin
+            action_data_bus <= 0;
+            action_ctrl_bus <= 0;
+         end
       end
    end
 

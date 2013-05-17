@@ -47,7 +47,7 @@ def write_table(position, wr_cmp_data, wr_cmp_mask, wr_action_data):
     # Dummy write to write reg for tcam push
     time.sleep(1)
     writeReg(rd.MATCHER_WRITE_REG_REG(), position)
-    print [hex(x) for x in cmp_din]
+    #print [hex(x) for x in cmp_din]
 
 def read_table(index):
     writeReg(rd.MATCHER_READ_REG_REG(), index)
@@ -58,14 +58,15 @@ def read_table(index):
         vals.append(readReg(rd.MATCHER_LUT_DATA_0_REG()+4*j))
         vals2.append(readReg(rd.MATCHER_TCAM_DATA_0_REG()+4*j))
         vals3.append(readReg(rd.MATCHER_TCAM_MASK_0_REG()+4*j))
-    print [hex(x) for x in vals]
-    print [hex(x) for x in vals2]
-    print [hex(x) for x in vals3]
+    #print [hex(x) for x in vals]
+    #print [hex(x) for x in vals2]
+    #print [hex(x) for x in vals3]
     tot = [vals, vals2, vals3]
     for k in xrange(3):
         mydata = struct.pack("I"*9, *tot[k])
         of_h = OFHeader(mydata)
 
-        print [(x[0], of_h.pretty.get(x[0], -1)) for x in OF_STRUCT]
+        for x in OF_STRUCT: print (x[0], of_h.pretty.get(x[0], -1)),
+        print ''
 
 
